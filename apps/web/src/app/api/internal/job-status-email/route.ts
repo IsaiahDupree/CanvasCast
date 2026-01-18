@@ -57,6 +57,7 @@ export async function POST(req: Request) {
     };
 
     const projectUrl = `${BASE_URL}/app/projects/${job.project_id}`;
+    const jobUrl = `${BASE_URL}/app/jobs/${job.id}`;
 
     let kind: "job_started" | "job_completed" | "job_failed";
     if (event === "JOB_STARTED") kind = "job_started";
@@ -76,10 +77,10 @@ export async function POST(req: Request) {
 
     const html =
       kind === "job_completed"
-        ? jobCompletedEmail({ projectUrl })
+        ? jobCompletedEmail({ jobUrl })
         : kind === "job_started"
-          ? jobStartedEmail({ projectUrl })
-          : jobFailedEmail({ projectUrl, error: job.error_message });
+          ? jobStartedEmail({ jobUrl })
+          : jobFailedEmail({ jobUrl, error: job.error_message });
 
     // Log email
     const { data: logRow } = await supabase
@@ -130,31 +131,31 @@ export async function POST(req: Request) {
   }
 }
 
-function jobCompletedEmail({ projectUrl }: { projectUrl: string }) {
+function jobCompletedEmail({ jobUrl }: { jobUrl: string }) {
   return `
   <div style="font-family: ui-sans-serif, system-ui; line-height: 1.5">
     <h2>✅ Your video is ready</h2>
     <p>Your CanvasCast render finished. You can download the MP4 + asset pack now.</p>
-    <p><a href="${projectUrl}">Open your project →</a></p>
-    <p style="color:#666;font-size:12px">CanvasCast</p>
+    <p><a href="${jobUrl}" style="color:#7c3aed;text-decoration:none;font-weight:600">Download your video →</a></p>
+    <p style="color:#666;font-size:12px;margin-top:24px">CanvasCast</p>
   </div>`;
 }
 
-function jobStartedEmail({ projectUrl }: { projectUrl: string }) {
+function jobStartedEmail({ jobUrl }: { jobUrl: string }) {
   return `
   <div style="font-family: ui-sans-serif, system-ui; line-height: 1.5">
     <h2>🎬 Render started</h2>
     <p>CanvasCast is generating your script, voice, visuals, and render timeline.</p>
-    <p><a href="${projectUrl}">View status →</a></p>
-    <p style="color:#666;font-size:12px">CanvasCast</p>
+    <p><a href="${jobUrl}" style="color:#7c3aed;text-decoration:none;font-weight:600">View progress →</a></p>
+    <p style="color:#666;font-size:12px;margin-top:24px">CanvasCast</p>
   </div>`;
 }
 
 function jobFailedEmail({
-  projectUrl,
+  jobUrl,
   error,
 }: {
-  projectUrl: string;
+  jobUrl: string;
   error?: string | null;
 }) {
   const err = error
@@ -163,9 +164,9 @@ function jobFailedEmail({
   return `
   <div style="font-family: ui-sans-serif, system-ui; line-height: 1.5">
     <h2>❌ Render failed</h2>
-    <p>Something broke during the job. You can retry from the project page.</p>
+    <p>Something went wrong during video generation. You can retry from the job page.</p>
     ${err}
-    <p><a href="${projectUrl}">Open your project →</a></p>
-    <p style="color:#666;font-size:12px">CanvasCast</p>
+    <p><a href="${jobUrl}" style="color:#7c3aed;text-decoration:none;font-weight:600">View details →</a></p>
+    <p style="color:#666;font-size:12px;margin-top:24px">CanvasCast</p>
   </div>`;
 }
