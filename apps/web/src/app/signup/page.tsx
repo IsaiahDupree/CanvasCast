@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Play, Loader2, CheckCircle } from "lucide-react";
+import { Loader2, CheckCircle, Sparkles } from "lucide-react";
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
@@ -12,19 +12,46 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [draft, setDraft] = useState<{ promptText: string } | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
+  
+  const draftId = searchParams.get("draft");
+
+  // Fetch draft if we have one
+  useEffect(() => {
+    async function fetchDraft() {
+      if (!draftId) return;
+      
+      try {
+        const res = await fetch("/api/draft");
+        const data = await res.json();
+        if (data.draft) {
+          setDraft(data.draft);
+        }
+      } catch (err) {
+        console.error("Failed to fetch draft:", err);
+      }
+    }
+    fetchDraft();
+  }, [draftId]);
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
+    // Include redirect to claim draft after signup
+    const redirectUrl = draftId 
+      ? `${window.location.origin}/auth/callback?claim_draft=true`
+      : `${window.location.origin}/auth/callback`;
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: redirectUrl,
       },
     });
 
@@ -69,9 +96,26 @@ export default function SignupPage() {
             <img src="/images/logo-icon.png" alt="CanvasCast" className="w-12 h-12" />
             <span className="text-2xl font-bold">CanvasCast</span>
           </Link>
-          <h1 className="text-3xl font-bold mb-2">Create your account</h1>
-          <p className="text-gray-400">Start creating videos in minutes</p>
+          <h1 className="text-3xl font-bold mb-2">
+            {draft ? "Your prompt is saved!" : "Create your account"}
+          </h1>
+          <p className="text-gray-400">
+            {draft ? "Sign up to generate your free video" : "Start creating videos in minutes"}
+          </p>
         </div>
+
+        {/* Show saved prompt preview */}
+        {draft && (
+          <div className="mb-6 p-4 rounded-lg bg-brand-500/10 border border-brand-500/20">
+            <div className="flex items-center gap-2 text-brand-400 text-sm mb-2">
+              <Sparkles className="w-4 h-4" />
+              <span>Your video idea</span>
+            </div>
+            <p className="text-gray-300 text-sm line-clamp-3">
+              {draft.promptText}
+            </p>
+          </div>
+        )}
 
         <form onSubmit={handleSignup} className="space-y-4">
           {error && (

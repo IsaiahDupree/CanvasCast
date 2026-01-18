@@ -1,0 +1,990 @@
+Skip to content
+Chat history
+
+
+
+
+
+You said:
+So I basically need an app to where um it's able to generate um videos for users, um and we're going to start off with one uh format, right? Um, or, you know, the users are able to put input a prompt, right? They get a free trial when they input their prompts, their prompt gets saved, they ask them to sign up, right? Then they have to sign up, they are able to send in their uh send in their uh Their prompt, don't worry, it's saved from when they entered it in the first place, and then they could edit it and uh confirm to send it again. Also if we, uh, if there's some any, if there's like any tips at all, uh, or if it has at the description, or if, if like, if, if they usually want to input a transcript or it says auto-generate transcript, all this stuff, uh, they will have the option, right? If they want to input their own voice, they could do that, uh, have like, you know, they could select that if they want to to enable that. If they want to start off with the base image to have a consistent character generation, uh, that could also be enabled. Uh, if they have a select, you know, if they have pictures of themselves that they want to attach as stickers to express the different types of emotions and expressions for the video during the scenes of the video as dictated by the transcript, that's generated from the prompts or generated from the actual transcripts that they put in, they can put that in there as well. Right, um. But I understand that's a lot to ask for first-time users. We're still going to build out those features anyway, and, you know, for our own use case, and then we're gonna, you know, really sell on the idea that they upload their own voice, upload their own transcript, upload their own description of what they want the video to be, and they also, they also can see examples. And if they want to, they could just, like, go with an example generation to see what would happen, right? And this is all after, after sign-in, after users, after the user puts in their first prompt, right, that we set the prompt. Then we kick off the generation and then we, we wait, you know, we tell them, we let them know that the process of the video creation is going. We let them know the detailed status of the video creation. And then we send, and then like, we tell them to be like, you can be back and like go to this or whatever, right? Then we send them an email saying, hey, your video is ready, give them the link, all this stuff, and the URLs and stuff. And then we have, and we give them the full video plus all the assets that were generated with the video. Right, that's one free video they can download and they have to pay other, you know, they have to pay for other credits to be able to access and generate more videos, right? So I'm thinking like, you know, we have a Hugging Face, a text-to-speech model, where users can input their own voice if they want to. Then we have Google Gemini Nano Banana API to generate the consistent imagery, images, characters, consistent characters, right? And we are, we're using Remotion, right, to be able to put everything in place. And again, like, Remotion, the timestamps are weird, so we're gonna go have to, we're gonna have to use OpenAI Whisper to be able to get the exact timestamps of the transcript words, and that's the main thing that we need, the transcripts and the timing, the word-level timing, so we could, so when we enter the next scene, it doesn't get cut off, right? I'm not sure what, where will we host this, but we do have subscriptions towards Render and we do have subscriptions towards Modal, M-O-D-A-L. So I'm thinking we could use that in combination with all these, all these, this PRD, and then reutilize what we did for a blank logo and then slap a lot of copy and paste landing page on it, throw some ads on it, and then call it a day, and then write, you know, steal some ads from Facebook Marketplace of what's working, what people have already done, right? And then, you know, use that for our advantage and then use those ads towards our stuff because currently nobody else has executed this completely yet except for us.
+ChatGPT said:
+
+Thought for 16s
+Below is a PRD + architecture that matches what you described (first prompt → save → signup → confirm → generate → live status → email when ready → download video + assets → pay/credits for more). I’m also keeping it realistic: MVP = 1 format and the “advanced” stuff (voice upload, character consistency, stickers) gets built as add-ons without breaking the core pipeline.
+
+Product: “Prompt → Auto-Video” Generator
+Goal
+Let users generate a short video from a prompt (or transcript), with:
+
+one free video (trial),
+
+clear step-by-step job status,
+
+delivery via email + dashboard,
+
+and a credits/subscription model for additional generations.
+
+Core Promise (MVP)
+User types prompt → gets a complete rendered MP4 + assets pack (images, audio, captions).
+
+User Flow (exactly how you described)
+0) Landing page (no auth)
+Prompt input box (plus “Try an example” button)
+
+When they hit “Generate”:
+
+Save as a Draft Prompt (anonymous session)
+
+Show: “Your video is being prepared — create an account to finish + download.”
+
+1) Signup gate (still friendly)
+Signup/login
+
+After auth, restore their draft prompt automatically
+
+Let them:
+
+edit prompt
+
+optionally paste transcript
+
+choose “auto-generate transcript from prompt”
+
+(optional toggles, but collapsed under Advanced)
+
+2) Confirm + Start Generation
+Clicking “Generate Video” creates a Job
+
+Immediately show a Job Status page with progress steps and ETA language like “This can take several minutes.”
+
+3) Background processing + live status
+In-app status updates + optional “email me when done” toggle (default ON)
+
+4) Delivery
+Email: “Your video is ready” + link to dashboard
+
+Dashboard: download
+
+MP4
+
+captions (SRT/VTT)
+
+audio (WAV/MP3)
+
+images per scene
+
+a “manifest.json” describing scenes/timestamps/assets
+
+5) Monetization
+Trial includes 1 generation credit (or 1 free render)
+
+After trial:
+
+buy credits pack or
+
+subscribe for monthly credits
+
+MVP Scope vs V1 Add-Ons
+MVP (build first)
+One format (pick a single style like “Talking-head captions + b-roll style images” or “Storyboard slideshow w/ narration”):
+
+Prompt → script (LLM)
+
+Script → scene plan (LLM outputs JSON)
+
+Scene plan → images (Gemini Nano Banana)
+
+Narration (TTS default voice)
+
+Captions with word-level timestamps
+
+Remotion render to MP4
+
+Assets zip + email notification
+
+Credits + Stripe
+
+V1 Add-Ons (behind “Advanced”)
+Upload transcript (skip script generation)
+
+Upload voice (or voice sample for cloning, if you support that)
+
+Upload base character image for consistent character generation
+
+Upload “stickers” (self images/emotions) mapped to transcript moments
+
+Multiple formats / templates
+
+Key Feature Requirements
+A) Prompt + Draft Saving (Pre-auth)
+Anonymous session token stored in cookie/localStorage
+
+Backend stores draft_prompts keyed by session token
+
+On signup, draft is attached to user
+
+B) Video Job Status (must feel “detailed”)
+Use a simple state machine:
+
+JOB_STATES
+
+QUEUED
+
+SCRIPTING
+
+SCENE_PLANNING
+
+IMAGE_GEN
+
+VOICE_GEN
+
+ALIGNMENT (word timestamps)
+
+RENDERING
+
+UPLOAD_PACKAGING
+
+READY
+
+FAILED
+
+Each state includes:
+
+progress_pct (0–100)
+
+status_message (human readable)
+
+artifacts_ready[] (start showing partial outputs when available)
+
+C) Consistent Imagery (Gemini “Nano Banana”)
+Your assumption is valid: Nano Banana is Gemini’s native image generation capability in the Gemini API, and there are official examples for consistent imagery workflows. 
+
+So the approach:
+
+Generate a character sheet / reference image once
+
+Use that reference image in subsequent scene generations to keep consistency
+
+D) Word-level timestamps
+You’re right to care about this: Remotion cuts feel bad if your scene boundaries don’t match spoken words.
+
+Generate narration audio
+
+Run alignment to get word timestamps
+
+Drive Remotion transitions off those timestamps
+
+E) Email Notification
+Trigger when job becomes READY
+
+Include dashboard link (signed URL or normal auth)
+
+Architecture (re-using your BlankLogo pattern)
+Recommended Split
+Render (web + API + auth + billing)
+
+Next.js frontend + API routes (or separate backend)
+
+Stripe + user accounts
+
+Job creation + status polling
+
+Webhook handlers
+
+Modal (heavy compute pipeline)
+
+image generation calls (Gemini API)
+
+TTS (HF model container or external)
+
+alignment (Whisper or other)
+
+Remotion rendering (Node render in container)
+
+packaging + upload
+
+This fits what Modal is great at: bursty compute + pipelines.
+
+Data Model (Supabase/Postgres style)
+tables
+
+users
+
+projects (a “video request” container)
+
+draft_prompts (session_token, prompt_text, created_at)
+
+jobs (project_id, state, progress, error, created_at, started_at, finished_at)
+
+job_steps (job_id, step, status, started_at, finished_at, logs_url)
+
+assets (job_id, type: image/audio/captions/video/zip, url, metadata jsonb)
+
+credits_ledger (user_id, delta, reason, job_id, created_at)
+
+subscriptions (stripe_customer_id, status, plan_id, renew_at)
+
+API Endpoints (minimal set)
+POST /api/draft → create/update draft prompt (pre-auth)
+
+POST /api/projects → create project from prompt (auth)
+
+POST /api/projects/:id/jobs → start generation job (auth, consumes credit)
+
+GET /api/jobs/:id → job status + artifact list
+
+POST /api/webhooks/stripe → billing events
+
+POST /api/webhooks/modal → job step updates (optional; Modal can call back)
+
+Frontend uses:
+
+polling (every 2–5s) or websockets/SSE for status
+
+Generation Pipeline (what Modal actually runs)
+Input
+prompt OR transcript
+
+template_id (your “one format”)
+
+options flags:
+
+use_user_voice
+
+use_character_reference
+
+use_stickers
+
+etc.
+
+Steps
+Script (if no transcript provided)
+
+Scene plan JSON (strict schema: scenes, durations, visual prompts, on-screen text)
+
+Image gen per scene (Gemini Nano Banana + reference images) 
+
+Voice (TTS default; later: user upload/clone)
+
+Alignment → word timestamps
+
+Remotion render using the scene plan + timestamps
+
+Upload assets + zip
+
+Set READY + notify
+
+Monetization Model (clean + simple)
+Trial: 1 free render credit
+
+Paid:
+
+Starter: monthly credits (e.g., 10 renders)
+
+Pro: more credits
+
+Top-up packs for extra credits
+
+Credits are deducted when job moves from QUEUED → SCRIPTING (or when it actually starts running on Modal).
+
+Safety + Compliance Notes (important for your “upload voice / photos” features)
+If you allow:
+
+voice upload / cloning
+
+uploading selfies for stickers
+
+consistent character refs
+
+You should add:
+
+explicit consent checkbox (“I own this voice/image or have rights”)
+
+basic content moderation on prompts + uploads
+
+rate limiting + abuse detection
+
+(These are the things that keep you from getting nuked by payments/providers later.)
+
+One adjustment: “steal ads”
+Don’t copy ads 1:1. Instead:
+
+use Meta Ad Library to extract patterns (hooks, claims style, pacing)
+
+rewrite with your own visuals + proof + positioning
+This keeps you safer legally and gives you better long-term brand trust.
+
+What I’d ship first (the exact “one format” that sells)
+Format idea: “Narrated storyboard with punchy captions”
+
+6–10 scenes, each scene = one strong visual + caption line
+
+Great for TikTok/Reels/Shorts
+
+Doesn’t require complex b-roll video gen at first
+
+Still feels magical because it’s consistent + timed + packaged
+
+If you want, I can turn this into a full PRD doc with:
+
+acceptance criteria per feature,
+
+UI wireframe text (each screen),
+
+JSON schemas for scene_plan.json,
+
+and a Modal workflow outline that mirrors your BlankLogo job runner style.
+
+You said:
+yes that would be cool 
+ChatGPT said:
+I’ll turn your concept into a full PRD with screens, acceptance criteria, schemas, and a concrete Modal/Render/Supabase architecture + job runner workflow (modeled after BlankLogo) so you can start building immediately.
+
+
+Thought for 39s
+Cool — I’ll write the full PRD now (screens, acceptance criteria, schemas, and a concrete Modal + Render + Supabase job runner that mirrors your BlankLogo pattern). Quick note: in my last message I accidentally dropped citation markers without actually fetching sources; below is the corrected version with real sources where needed.
+
+PRD — Prompt-to-Video Generator (MVP “One Format”)
+Doc owner: Isaiah
+Version: v0.1 (MVP-first)
+Date: Jan 17, 2026
+Product type: Web app (auth + credits) + background video pipeline + email delivery
+
+1) Summary
+One-liner
+Users enter a prompt → we generate a video (MP4) + downloadable assets (images, audio, captions) → we show detailed step-by-step status → we email when ready → 1 free trial video → credits/subscription for more.
+
+Primary goals (MVP)
+Convert “cold traffic” into first render with minimal friction (draft save before auth).
+
+Deliver a complete output package reliably: MP4 + asset bundle + timestamps.
+
+Make rendering feel trustworthy with clear progress + email delivery.
+
+Monetize with credits + subscription after the first free render.
+
+Non-goals (MVP)
+Multiple formats/templates (we start with one).
+
+True “text-to-video b-roll generation” (use images/storyboard instead).
+
+Real-time editing timeline UI (we generate; users download).
+
+2) MVP Format Definition (pick 1 format and perfect it)
+“Narrated Storyboard + Captions” (recommended)
+6–12 scenes
+
+Each scene = generated image + on-screen caption + simple motion (Ken Burns / pan / zoom)
+
+Voiceover narration + word-synced captions
+
+Optional sticker overlays (V1 add-on)
+
+Why: fast to render, high perceived value, short-form friendly, doesn’t require heavy video-gen.
+
+3) UX / Screens (MVP)
+Screen A — Landing (no auth)
+Elements
+
+Prompt input (multi-line)
+
+“Try an example” dropdown
+
+CTA: Generate Free Video
+
+Microcopy: “1 free render. We’ll save your prompt.”
+
+Behavior
+
+On submit: create Draft Prompt tied to anonymous session token → route to Signup Gate.
+
+Screen B — Signup Gate (prompt saved)
+Elements
+
+“Your prompt is saved.”
+
+Auth: email magic link / Google
+
+Small preview of prompt (collapsed)
+
+Behavior
+
+After auth: attach draft to user → route to Create page (with prompt restored).
+
+Screen C — Create (post-auth prompt editor)
+Sections
+
+Prompt editor (restored draft, editable)
+
+Transcript (tabs)
+
+“Auto-generate from prompt” (default)
+
+“Paste my transcript”
+
+Voice
+
+Default TTS (default)
+
+Upload voice audio (V1)
+
+Consistent Character
+
+Upload reference image (V1)
+
+Stickers
+
+Upload sticker set (V1)
+
+CTA: Generate Video (shows credit cost)
+
+Screen D — Job Status (live)
+Shows a stepper
+
+Queued
+
+Scripting
+
+Scene Planning
+
+Image Gen
+
+Voice Gen
+
+Alignment
+
+Rendering
+
+Packaging
+
+Ready
+
+Each step shows: short explanation + percent + latest log line (friendly).
+
+User options:
+
+“Email me when ready” (default ON)
+
+“Leave this page — we’ll email you.”
+
+Screen E — Result (Ready)
+Outputs
+
+MP4 player
+
+Download buttons:
+
+MP4
+
+Captions (SRT + VTT)
+
+Audio (WAV/MP3)
+
+Images (zip)
+
+Full assets pack zip
+
+Manifest JSON
+
+Also:
+
+“Generate another” (consumes credits)
+
+“Duplicate settings” (quick rerun)
+
+Screen F — Billing / Credits
+Trial shows: “1 free render remaining / used”
+
+Credit packs + subscription plans
+
+Purchase history
+
+4) Functional Requirements + Acceptance Criteria
+FR-1 Draft prompt saving (pre-auth)
+User story: As a new visitor, I can generate without signing up first, and my prompt is saved.
+
+Acceptance criteria
+
+Given I’m not logged in, when I click “Generate Free Video”, then my prompt is stored as a Draft tied to a session token.
+
+When I complete signup/login, then the draft prompt is restored in the editor.
+
+Draft expires after X days (e.g., 7) unless attached to user.
+
+Edge cases
+
+User opens a new device → draft not available unless they sign up before leaving (OK).
+
+Multiple drafts in same session → keep most recent + list previous (optional).
+
+FR-2 Job creation + credit gating
+User story: As a user, I can create a video job and see it progress.
+
+Acceptance criteria
+
+Given I have a free trial credit (or paid credits), when I click “Generate Video”, then a Job is created with state QUEUED.
+
+Credits are reserved at job start; if job fails before rendering, credits are refunded (configurable policy).
+
+If I have 0 credits, CTA routes me to Billing.
+
+FR-3 Transcript generation (MVP)
+User story: I can either paste a transcript or have one generated.
+
+Acceptance criteria
+
+If “Auto-generate transcript” selected: system produces a structured script output (with narration + scene beats).
+
+If “Paste transcript” selected: system uses it as narration source.
+
+FR-4 Scene plan JSON (MVP)
+User story: The system turns transcript into scenes suitable for rendering.
+
+Acceptance criteria
+
+Output includes scene list with durations OR target word ranges, plus image prompts + on-screen captions.
+
+Must be valid JSON against schema (below).
+
+Total video length respects template limits (e.g., 20–60 seconds default).
+
+FR-5 Image generation (MVP + V1 consistency)
+MVP acceptance criteria
+
+For each scene, generate one image asset and store URL.
+
+If any image gen fails, retry up to N times; if still failing, mark job failed with reason.
+
+V1 consistency acceptance criteria
+
+If user provides a character reference, pipeline uses it to maintain consistent subject identity across scenes (Gemini “Nano Banana” supports consistent imagery workflows via reference images; Google even provides a “consistent imagery” codelab for this pattern). 
+
+FR-6 Voice (MVP TTS)
+Acceptance criteria
+
+Default: generate narration audio using chosen TTS voice.
+
+Audio is stored and linked to job assets.
+
+V1 user voice upload
+
+User can upload their own narration audio (skip TTS).
+
+System still runs alignment to get word timings.
+
+FR-7 Word-level timestamp alignment
+User story: Captions should match spoken words and scene cuts shouldn’t feel “off.”
+
+Acceptance criteria
+
+System produces word-level timestamps for the final narration audio.
+
+Captions export to SRT + VTT.
+
+Remotion scene transitions use timestamp anchors (word index/time) rather than naive fixed durations.
+
+FR-8 Rendering (Remotion)
+Key constraint
+
+Rendering inside Vercel Serverless functions isn’t viable due to size limits and Chromium dependency. 
+
+Acceptance criteria
+
+Rendering runs in a worker environment (Modal container recommended).
+
+Output MP4 meets template spec (resolution, fps, duration).
+
+If render fails, job transitions to FAILED with error log attached.
+
+(Alternative options: Remotion Lambda on AWS is a known distributed rendering path, and Remotion documents server-side rendering approaches and tradeoffs. 
+)
+
+FR-9 Packaging + delivery
+Acceptance criteria
+
+System produces:
+
+video.mp4
+
+audio.wav or audio.mp3
+
+captions.srt, captions.vtt
+
+/images/scene_001.png ...
+
+manifest.json
+
+assets.zip containing everything
+
+Email is sent when job becomes READY, with a dashboard link.
+
+FR-10 Status updates (detailed + trustworthy)
+Acceptance criteria
+
+Job state machine persists step + percent + message.
+
+UI polls /jobs/:id and shows updates at least every 2–5 seconds.
+
+Step logs available (even if only last ~20 lines).
+
+5) System Architecture (BlankLogo-style)
+Recommended deployment
+Web + API: Next.js on Render (or similar)
+
+DB/Auth/Storage: Supabase (Postgres + Storage) or R2/S3 for large assets
+
+Worker compute: Modal (pipeline + rendering)
+
+Email: Resend/Postmark
+
+Analytics: PostHog + Sentry
+
+High-level diagram
+User (Web) 
+  -> Next.js (Render) 
+      -> Supabase (Auth + DB)
+      -> Storage (Supabase or R2/S3)
+      -> Create Job (DB)
+      -> Trigger Worker (Modal)
+Modal Worker
+  -> Script + ScenePlan
+  -> Image Gen (Gemini Nano Banana via Gemini API) :contentReference[oaicite:3]{index=3}
+  -> TTS (HF / other)
+  -> Alignment (word timestamps)
+  -> Remotion Render (Chromium in container)
+  -> Upload assets + zip
+  -> Update Job READY
+Next.js
+  -> Email “Ready”
+  -> Dashboard download
+Job state machine
+QUEUED → SCRIPTING → SCENE_PLANNING → IMAGE_GEN → VOICE_GEN → ALIGNMENT → RENDERING → UPLOAD_PACKAGING → READY
+Failure at any step → FAILED (with failed_step, error_code, error_message)
+
+6) Data Model (Supabase)
+Tables (MVP)
+draft_prompts
+
+id
+
+session_token
+
+prompt_text
+
+created_at
+
+claimed_by_user_id (nullable)
+
+projects
+
+id
+
+user_id
+
+title
+
+prompt_text
+
+transcript_text (nullable)
+
+template_id
+
+options_json (jsonb)
+
+created_at
+
+jobs
+
+id
+
+project_id
+
+user_id
+
+state
+
+progress_pct
+
+status_message
+
+failed_step (nullable)
+
+error_json (nullable)
+
+created_at / started_at / finished_at
+
+job_steps
+
+id
+
+job_id
+
+step_name
+
+state (started/succeeded/failed)
+
+started_at / finished_at
+
+logs_url (nullable)
+
+assets
+
+id
+
+job_id
+
+type (video, audio, image, captions, zip, manifest)
+
+url
+
+metadata_json (jsonb)
+
+credits_ledger
+
+id
+
+user_id
+
+delta (int)
+
+reason (trial_grant, job_reserve, job_refund, purchase)
+
+job_id (nullable)
+
+created_at
+
+7) API Contract (MVP)
+Draft
+POST /api/draft
+
+body: { promptText }
+
+returns: { draftId }
+
+Project + job
+POST /api/projects
+
+body: { promptText, transcriptMode, transcriptText?, templateId, options }
+
+returns: { projectId }
+
+POST /api/projects/:projectId/jobs
+
+returns: { jobId }
+
+Status
+GET /api/jobs/:jobId
+
+returns:
+
+{
+  "jobId": "…",
+  "state": "RENDERING",
+  "progressPct": 62,
+  "statusMessage": "Rendering scene 7/10…",
+  "steps": [{ "name": "IMAGE_GEN", "state": "succeeded" }],
+  "assets": [{ "type": "image", "url": "…" }]
+}
+Billing webhooks
+POST /api/webhooks/stripe
+
+8) JSON Schemas (copy/paste ready)
+8.1 scene_plan.json
+{
+  "version": "1.0",
+  "templateId": "narrated_storyboard_v1",
+  "video": { "width": 1080, "height": 1920, "fps": 30 },
+  "narration": {
+    "text": "Full narration text…",
+    "voice": { "provider": "tts_default", "voiceId": "alloy" }
+  },
+  "scenes": [
+    {
+      "sceneId": "s1",
+      "title": "Hook",
+      "caption": "Stop doing this with your ads…",
+      "imagePrompt": "Cinematic close-up of…",
+      "visualStyle": "clean, high-contrast, short-form",
+      "timing": {
+        "mode": "anchor_words",
+        "startWordIndex": 0,
+        "endWordIndex": 28
+      },
+      "overlays": [
+        { "type": "sticker", "stickerId": "laugh", "enterWordIndex": 10, "exitWordIndex": 18 }
+      ]
+    }
+  ]
+}
+8.2 transcript_alignment.json (word timing)
+{
+  "text": "…",
+  "words": [
+    { "w": "Stop", "t0": 0.12, "t1": 0.34 },
+    { "w": "doing", "t0": 0.35, "t1": 0.58 }
+  ]
+}
+8.3 manifest.json (final output)
+{
+  "jobId": "…",
+  "templateId": "narrated_storyboard_v1",
+  "render": { "durationSec": 42.1, "fps": 30, "resolution": "1080x1920" },
+  "assets": {
+    "videoMp4": "https://…/video.mp4",
+    "audio": "https://…/audio.wav",
+    "captionsSrt": "https://…/captions.srt",
+    "captionsVtt": "https://…/captions.vtt",
+    "images": ["https://…/scene_001.png"],
+    "zip": "https://…/assets.zip"
+  },
+  "debug": {
+    "scenePlanUrl": "https://…/scene_plan.json",
+    "alignmentUrl": "https://…/alignment.json"
+  }
+}
+9) Modal Worker Design (how the pipeline runs)
+Worker entrypoint
+start_job(jobId)
+
+Load project + options from DB
+
+Update job → SCRIPTING
+
+Generate transcript (or use provided)
+
+Update job → SCENE_PLANNING
+
+Create scene_plan.json
+
+Update job → IMAGE_GEN
+
+Generate scene images (optionally with reference images for consistency) 
+
+Update job → VOICE_GEN
+
+Generate narration audio (or ingest uploaded audio)
+
+Update job → ALIGNMENT
+
+Produce word timestamps JSON
+
+Update job → RENDERING
+
+Render with Remotion in-container (Chromium)
+
+Update job → UPLOAD_PACKAGING
+
+Upload assets + zip + manifest
+
+Update job → READY
+
+Call web app callback (or DB trigger) → send email
+
+10) Analytics (PostHog events that matter)
+Acquisition → activation
+landing_prompt_submitted
+
+draft_created
+
+signup_started
+
+signup_completed
+
+project_created
+
+job_started
+
+job_step_changed (properties: step, state, pct)
+
+job_ready
+
+asset_downloaded (type)
+
+trial_consumed
+
+Monetization
+billing_viewed
+
+checkout_started
+
+checkout_completed
+
+credits_added
+
+subscription_started
+
+subscription_canceled
+
+Quality signals
+job_failed (step, error_code)
+
+render_duration_ms
+
+image_gen_retry_count
+
+time_to_ready_sec
+
+11) Rollout Plan (no fluff, just what to ship)
+Phase 0 — MVP
+Draft saving + signup restore
+
+One template
+
+TTS voice
+
+Scene images
+
+Alignment
+
+Remotion render
+
+Status UI + email delivery
+
+1 trial credit + paid credits
+
+Phase 1 — Power features
+Upload transcript
+
+Upload narration audio
+
+Consistent character reference image workflow 
+
+Stickers (overlay timeline from word anchors)
+
+12) Risks + Mitigations
+Render reliability / Chromium headaches
+
+Mitigate: containerize Remotion render; cap video length; enforce template constraints.
+
+Avoid serverless platforms that can’t support the binary footprint (Vercel functions limitation is documented). 
+
+Image consistency expectations too high
+
+Mitigate: set UX expectation: “Consistency improves when you provide a reference image.”
+
+Costs spike
+
+Mitigate: hard caps (max scenes, max length), credit pricing tied to compute, caching per scene.
+
+User-uploaded voice/images (abuse)
+
+Mitigate: consent checkbox, rate limits, moderation, audit logs.
+
+Next thing I can generate for you (pick one, I’ll just do it)
+Exact UI copy for each screen (landing, status, ready, billing) + 2–3 tone variants
+
+The “one format” template spec (exact scene count rules, caption style rules, transitions)
+
+A BlankLogo-style job runner spec with your table names + webhook patterns + retry policy
+
+Say “1”, “2”, or “3” and I’ll output it immediately.
+
+Do you like this personality?
+
+
+
+
+
+
+No file chosenNo file chosen
+ChatGPT can make mistakes. Check important info.

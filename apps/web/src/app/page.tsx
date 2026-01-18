@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, Play, Sparkles, Download, Mic } from "lucide-react";
+import { PromptInput } from "@/components/prompt-input";
 
 export default function Home() {
   return (
@@ -18,41 +19,29 @@ export default function Home() {
             href="/login"
             className="px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 transition font-medium"
           >
-            Get Started
+            Sign In
           </Link>
         </nav>
       </header>
 
       {/* Hero */}
-      <section className="container mx-auto px-6 py-24 text-center">
+      <section className="container mx-auto px-6 py-16 text-center">
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-400 text-sm mb-6">
           <Sparkles className="w-4 h-4" />
           <span>AI-Powered Video Creation</span>
         </div>
         
-        <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">
-          Turn Your Passion<br />Into Videos
+        <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">
+          Turn Your Ideas<br />Into Videos
         </h1>
         
-        <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-10">
-          Transform your notes and ideas into professional 10-minute YouTube-ready videos
-          with AI-powered narration, stunning visuals, and accurate captions.
+        <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-8">
+          Enter a prompt and we&apos;ll generate a professional video with narration, 
+          visuals, and captions. Your first video is free.
         </p>
         
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link
-            href="/login"
-            className="px-8 py-4 rounded-xl bg-brand-600 hover:bg-brand-500 transition font-semibold text-lg flex items-center gap-2"
-          >
-            Start Creating <ArrowRight className="w-5 h-5" />
-          </Link>
-          <Link
-            href="#how-it-works"
-            className="px-8 py-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition font-semibold text-lg"
-          >
-            See How It Works
-          </Link>
-        </div>
+        {/* Prompt Input - Pre-auth */}
+        <PromptInput />
       </section>
 
       {/* Features */}
