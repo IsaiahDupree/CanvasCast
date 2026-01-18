@@ -7,7 +7,10 @@ const CreateProjectSchema = z.object({
   niche_preset: z.string().min(1),
   target_minutes: z.number().int().min(1).max(30).default(10),
   voice_profile_id: z.string().uuid().optional(),
-  content: z.string().optional(),
+  prompt_text: z.string().optional(),
+  transcript_mode: z.enum(["auto", "manual"]).default("auto"),
+  transcript_text: z.string().optional(),
+  template_id: z.string().default("narrated_storyboard_v1"),
 });
 
 export async function GET() {
@@ -46,7 +49,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const { title, niche_preset, target_minutes, voice_profile_id, content } = parsed.data;
+  const { title, niche_preset, target_minutes, voice_profile_id, prompt_text, transcript_mode, transcript_text, template_id } = parsed.data;
   const creditsRequired = target_minutes; // 1 credit per minute
 
   // Check credit balance
@@ -65,7 +68,7 @@ export async function POST(request: Request) {
     }, { status: 402 });
   }
 
-  // Create project
+  // Create project with PRD fields
   const { data: project, error: projectError } = await supabase
     .from("projects")
     .insert({
@@ -73,6 +76,10 @@ export async function POST(request: Request) {
       title,
       niche_preset,
       target_minutes,
+      prompt_text,
+      transcript_mode,
+      transcript_text,
+      template_id,
       status: "generating",
     })
     .select()
@@ -118,14 +125,14 @@ export async function POST(request: Request) {
   }
 
   // Store additional job metadata if provided
-  if (content || voice_profile_id) {
+  if (prompt_text || voice_profile_id) {
     await supabase.from("assets").insert({
       project_id: project.id,
       user_id: user.id,
       job_id: job.id,
       type: "other",
       path: "input_metadata",
-      meta: { content, voice_profile_id },
+      meta: { prompt_text, transcript_mode, transcript_text, voice_profile_id },
     });
   }
 

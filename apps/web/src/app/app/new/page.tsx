@@ -150,7 +150,8 @@ export default function NewProjectPage() {
         throw new Error(data.error || "Failed to create project");
       }
 
-      router.push(`/app/projects/${data.project.id}`);
+      // Redirect to job status page per PRD flow
+      router.push(`/app/jobs/${data.job.id}`);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong");
       setLoading(false);
