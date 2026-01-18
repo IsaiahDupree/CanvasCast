@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { Loader2, Sparkles, Mic, AlertCircle } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Loader2, Sparkles, Mic, AlertCircle, FileText } from "lucide-react";
 import Link from "next/link";
 import { createBrowserClient } from "@supabase/ssr";
 
@@ -24,6 +24,12 @@ const LENGTH_OPTIONS = [
   { value: 12, label: "12 min" },
 ];
 
+// Transcript mode options per PRD
+const TRANSCRIPT_MODES = [
+  { id: "auto", label: "Auto-generate from prompt", description: "AI will write your script" },
+  { id: "manual", label: "Paste my transcript", description: "Use your own script" },
+];
+
 interface VoiceProfile {
   id: string;
   name: string;
@@ -35,18 +41,52 @@ export default function NewProjectPage() {
   const [niche, setNiche] = useState("");
   const [length, setLength] = useState(10);
   const [content, setContent] = useState("");
+  const [transcriptMode, setTranscriptMode] = useState("auto");
+  const [transcript, setTranscript] = useState("");
   const [voiceProfileId, setVoiceProfileId] = useState<string | null>(null);
   const [voiceProfiles, setVoiceProfiles] = useState<VoiceProfile[]>([]);
   const [credits, setCredits] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadingDraft, setLoadingDraft] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [insufficientCredits, setInsufficientCredits] = useState(false);
+  const [hasDraft, setHasDraft] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const draftId = searchParams.get("draft");
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
+
+  // Load draft prompt if available
+  useEffect(() => {
+    async function loadDraft() {
+      if (!draftId) return;
+      
+      setLoadingDraft(true);
+      try {
+        const res = await fetch("/api/draft");
+        const data = await res.json();
+        
+        if (data.draft) {
+          setContent(data.draft.promptText);
+          setHasDraft(true);
+          // Try to extract a title from the prompt
+          const firstSentence = data.draft.promptText.split(/[.!?]/)[0];
+          if (firstSentence && firstSentence.length < 80) {
+            setTitle(firstSentence.trim());
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load draft:", err);
+      } finally {
+        setLoadingDraft(false);
+      }
+    }
+    loadDraft();
+  }, [draftId]);
 
   useEffect(() => {
     async function fetchData() {
@@ -90,7 +130,9 @@ export default function NewProjectPage() {
           title,
           niche_preset: niche,
           target_minutes: length,
-          content: content || undefined,
+          prompt_text: content || undefined,
+          transcript_mode: transcriptMode,
+          transcript_text: transcriptMode === "manual" ? transcript : undefined,
           voice_profile_id: voiceProfileId || undefined,
         }),
       });
@@ -123,6 +165,24 @@ export default function NewProjectPage() {
           Set up your video project and we&apos;ll generate everything for you
         </p>
       </div>
+
+      {/* Draft Restored Banner */}
+      {hasDraft && (
+        <div className="p-4 rounded-lg bg-brand-500/10 border border-brand-500/20 flex items-center gap-3 mb-6">
+          <Sparkles className="w-5 h-5 text-brand-400 flex-shrink-0" />
+          <div>
+            <p className="text-brand-400 font-medium">Your prompt has been restored!</p>
+            <p className="text-sm text-gray-400">Edit below and complete your video setup.</p>
+          </div>
+        </div>
+      )}
+
+      {loadingDraft && (
+        <div className="p-4 rounded-lg bg-white/5 border border-white/10 flex items-center gap-3 mb-6">
+          <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+          <span className="text-gray-400">Loading your saved prompt...</span>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Credit Balance Display */}
@@ -262,22 +322,63 @@ export default function NewProjectPage() {
           )}
         </div>
 
-        {/* Content Input */}
+        {/* Transcript Mode Selection - Per PRD */}
         <div>
-          <label htmlFor="content" className="block text-sm font-medium mb-2">
-            Content / Notes (optional)
+          <label className="block text-sm font-medium mb-3">
+            <FileText className="w-4 h-4 inline mr-2" />
+            Script / Transcript
           </label>
-          <textarea
-            id="content"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="Paste your notes, script ideas, or describe what the video should cover..."
-            rows={5}
-            className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition resize-none"
-          />
-          <p className="text-xs text-gray-500 mt-2">
-            We&apos;ll use this to generate a professional script for your video
-          </p>
+          <div className="flex gap-3 mb-4">
+            {TRANSCRIPT_MODES.map((mode) => (
+              <button
+                key={mode.id}
+                type="button"
+                onClick={() => setTranscriptMode(mode.id)}
+                className={`flex-1 p-4 rounded-lg border text-left transition ${
+                  transcriptMode === mode.id
+                    ? "bg-brand-500/20 border-brand-500 text-white"
+                    : "bg-white/5 border-white/10 text-gray-300 hover:border-white/30"
+                }`}
+              >
+                <span className="font-medium block mb-1">{mode.label}</span>
+                <span className="text-xs text-gray-400">{mode.description}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Prompt/Content Input (for auto mode) */}
+          {transcriptMode === "auto" && (
+            <div>
+              <textarea
+                id="content"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="Describe what your video should cover... e.g., 'Create a motivational video about overcoming fear and taking action. Include powerful quotes and inspiring imagery.'"
+                rows={5}
+                className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition resize-none"
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                AI will generate a professional script based on your description
+              </p>
+            </div>
+          )}
+
+          {/* Manual Transcript Input */}
+          {transcriptMode === "manual" && (
+            <div>
+              <textarea
+                id="transcript"
+                value={transcript}
+                onChange={(e) => setTranscript(e.target.value)}
+                placeholder="Paste your complete script/transcript here. This will be used as the narration for your video..."
+                rows={8}
+                className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition resize-none"
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                Your script will be used as-is for narration. We&apos;ll generate visuals to match.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Submit */}
