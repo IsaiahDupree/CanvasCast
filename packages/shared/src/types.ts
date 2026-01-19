@@ -2,20 +2,23 @@
 
 export type ProjectStatus = "draft" | "generating" | "ready" | "failed";
 
-export type JobStatus =
-  | "QUEUED"
-  | "CLAIMED"
-  | "SCRIPTING"
-  | "VOICE_GEN"
-  | "ALIGNMENT"
-  | "VISUAL_PLAN"
-  | "IMAGE_GEN"
-  | "TIMELINE_BUILD"
-  | "RENDERING"
-  | "PACKAGING"
-  | "READY"
-  | "FAILED"
-  | "CANCELED";
+export const JOB_STATUSES = [
+  "QUEUED",
+  "CLAIMED",
+  "SCRIPTING",
+  "VOICE_GEN",
+  "ALIGNMENT",
+  "VISUAL_PLAN",
+  "IMAGE_GEN",
+  "TIMELINE_BUILD",
+  "RENDERING",
+  "PACKAGING",
+  "READY",
+  "FAILED",
+  "CANCELED",
+] as const;
+
+export type JobStatus = (typeof JOB_STATUSES)[number];
 
 // Job error codes for debugging
 export type JobErrorCode =
@@ -23,11 +26,13 @@ export type JobErrorCode =
   | "ERR_SCRIPT_GEN"
   | "ERR_TTS"
   | "ERR_WHISPER"
+  | "ERR_ALIGNMENT"
   | "ERR_VISUAL_PLAN"
   | "ERR_IMAGE_GEN"
   | "ERR_TIMELINE"
   | "ERR_RENDER"
   | "ERR_PACKAGING"
+  | "ERR_NOTIFY_COMPLETE"
   | "ERR_CREDITS"
   | "ERR_UNKNOWN";
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Bell, Mail, Loader2, CheckCircle } from "lucide-react";
+import { Bell, Mail, Loader2, CheckCircle, User, CreditCard } from "lucide-react";
 import { createBrowserClient } from "@supabase/ssr";
 
 type NotificationPrefs = {
@@ -11,6 +11,22 @@ type NotificationPrefs = {
   email_credits_low: boolean;
   email_account_status: boolean;
   marketing_opt_in: boolean;
+};
+
+type Profile = {
+  id: string;
+  display_name: string | null;
+  email: string | null;
+  avatar_url: string | null;
+};
+
+type Subscription = {
+  id: string;
+  plan: string;
+  status: string;
+  credits_per_month: number;
+  current_period_end: string | null;
+  cancel_at_period_end: boolean;
 };
 
 const defaultPrefs: NotificationPrefs = {
@@ -24,6 +40,8 @@ const defaultPrefs: NotificationPrefs = {
 
 export default function SettingsPage() {
   const [prefs, setPrefs] = useState<NotificationPrefs>(defaultPrefs);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -33,37 +51,61 @@ export default function SettingsPage() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
-  const fetchPrefs = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data } = await supabase
+      // Fetch profile
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (profileData) {
+        setProfile(profileData);
+      }
+
+      // Fetch notification preferences
+      const { data: prefsData } = await supabase
         .from("user_notification_prefs")
         .select("*")
         .eq("user_id", user.id)
         .maybeSingle();
 
-      if (data) {
+      if (prefsData) {
         setPrefs({
-          email_job_started: data.email_job_started,
-          email_job_completed: data.email_job_completed,
-          email_job_failed: data.email_job_failed,
-          email_credits_low: data.email_credits_low,
-          email_account_status: data.email_account_status,
-          marketing_opt_in: data.marketing_opt_in,
+          email_job_started: prefsData.email_job_started,
+          email_job_completed: prefsData.email_job_completed,
+          email_job_failed: prefsData.email_job_failed,
+          email_credits_low: prefsData.email_credits_low,
+          email_account_status: prefsData.email_account_status,
+          marketing_opt_in: prefsData.marketing_opt_in,
         });
       }
+
+      // Fetch subscription
+      const { data: subData } = await supabase
+        .from("subscriptions")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .maybeSingle();
+
+      if (subData) {
+        setSubscription(subData);
+      }
     } catch (err) {
-      console.error("Failed to load preferences:", err);
+      console.error("Failed to load data:", err);
     } finally {
       setLoading(false);
     }
   }, [supabase]);
 
   useEffect(() => {
-    fetchPrefs();
-  }, [fetchPrefs]);
+    fetchData();
+  }, [fetchData]);
 
   async function handleSave() {
     setSaving(true);
@@ -73,7 +115,23 @@ export default function SettingsPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { error } = await supabase
+      // Save profile if it exists
+      if (profile) {
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .update({
+            display_name: profile.display_name,
+            email: profile.email,
+            avatar_url: profile.avatar_url,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", user.id);
+
+        if (profileError) throw profileError;
+      }
+
+      // Save notification preferences
+      const { error: prefsError } = await supabase
         .from("user_notification_prefs")
         .upsert({
           user_id: user.id,
@@ -81,14 +139,34 @@ export default function SettingsPage() {
           updated_at: new Date().toISOString(),
         });
 
-      if (error) throw error;
+      if (prefsError) throw prefsError;
 
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {
-      console.error("Failed to save preferences:", err);
+      console.error("Failed to save settings:", err);
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleCancelSubscription() {
+    if (!subscription) return;
+
+    try {
+      const response = await fetch("/api/v1/subscriptions/cancel", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) throw new Error("Failed to cancel subscription");
+
+      // Refresh data
+      await fetchData();
+    } catch (err) {
+      console.error("Failed to cancel subscription:", err);
     }
   }
 
@@ -108,7 +186,50 @@ export default function SettingsPage() {
     <div className="p-8 max-w-2xl mx-auto">
       <div className="mb-8">
         <h1 className="text-2xl font-bold mb-2">Settings</h1>
-        <p className="text-gray-400">Manage your notification preferences</p>
+        <p className="text-gray-400">Manage your profile, notifications, and subscription</p>
+      </div>
+
+      {/* Profile Settings */}
+      <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-6">
+        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <User className="w-5 h-5" />
+          Profile
+        </h2>
+
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="displayName" className="block text-sm font-medium mb-2">
+              Display Name
+            </label>
+            <input
+              id="displayName"
+              type="text"
+              value={profile?.display_name || ""}
+              onChange={(e) =>
+                setProfile((prev) =>
+                  prev ? { ...prev, display_name: e.target.value } : null
+                )
+              }
+              className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-brand-400"
+            />
+          </div>
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium mb-2">
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={profile?.email || ""}
+              onChange={(e) =>
+                setProfile((prev) =>
+                  prev ? { ...prev, email: e.target.value } : null
+                )
+              }
+              className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-brand-400"
+            />
+          </div>
+        </div>
       </div>
 
       {/* Email Notifications */}
@@ -167,6 +288,51 @@ export default function SettingsPage() {
         />
       </div>
 
+      {/* Subscription Management */}
+      {subscription && (
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-6">
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <CreditCard className="w-5 h-5" />
+            Subscription
+          </h2>
+
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <div className="font-medium capitalize">{subscription.plan} Plan</div>
+                <div className="text-sm text-gray-400">
+                  {subscription.credits_per_month} credits per month
+                </div>
+              </div>
+              <div className={`px-3 py-1 rounded-full text-sm ${
+                subscription.status === "active"
+                  ? "bg-green-500/20 text-green-400"
+                  : "bg-yellow-500/20 text-yellow-400"
+              }`}>
+                {subscription.status}
+              </div>
+            </div>
+
+            {subscription.current_period_end && (
+              <div className="text-sm text-gray-400">
+                {subscription.cancel_at_period_end
+                  ? `Cancels on ${new Date(subscription.current_period_end).toLocaleDateString()}`
+                  : `Renews on ${new Date(subscription.current_period_end).toLocaleDateString()}`}
+              </div>
+            )}
+
+            {!subscription.cancel_at_period_end && (
+              <button
+                onClick={handleCancelSubscription}
+                className="w-full py-2 px-4 rounded-lg bg-red-600/20 hover:bg-red-600/30 text-red-400 transition font-medium"
+              >
+                Cancel Subscription
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Save Button */}
       <button
         onClick={handleSave}
@@ -184,7 +350,7 @@ export default function SettingsPage() {
             Saved!
           </>
         ) : (
-          "Save Preferences"
+          "Save Settings"
         )}
       </button>
     </div>

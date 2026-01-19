@@ -3,7 +3,7 @@
   "description": "AI Video Generation Platform - Transform text prompts into fully produced short-form videos with AI-generated scripts, voiceover, images, and captions",
   "version": "1.0",
   "totalFeatures": 156,
-  "completedFeatures": 0,
+  "completedFeatures": 103,
   "phases": {
     "phase1_foundation": "Project setup, monorepo structure, shared packages",
     "phase2_database": "Supabase schema, migrations, RLS policies, RPC functions",
@@ -26,7 +26,7 @@
       "priority": "P0",
       "phase": 1,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "foundation",
       "files": ["pnpm-workspace.yaml", "package.json", "turbo.json"],
       "acceptance": ["pnpm install works", "All workspaces linked", "turbo dev runs all apps"]
@@ -38,7 +38,7 @@
       "priority": "P0",
       "phase": 1,
       "effort": "4h",
-      "passes": false,
+      "passes": true,
       "category": "foundation",
       "files": ["packages/shared/src/types/index.ts", "packages/shared/src/types/job.ts", "packages/shared/src/types/project.ts"],
       "acceptance": ["Types exported correctly", "All apps can import types"]
@@ -50,7 +50,7 @@
       "priority": "P0",
       "phase": 1,
       "effort": "4h",
-      "passes": false,
+      "passes": true,
       "category": "foundation",
       "files": ["packages/shared/src/schemas/project.ts", "packages/shared/src/schemas/job.ts"],
       "acceptance": ["Schemas validate correctly", "API uses schemas for validation"]
@@ -62,7 +62,7 @@
       "priority": "P0",
       "phase": 1,
       "effort": "1h",
-      "passes": false,
+      "passes": true,
       "category": "foundation",
       "files": ["apps/web/.env.example", "apps/api/.env.example", "apps/worker/.env.example"],
       "acceptance": ["All env vars documented", "Apps fail gracefully on missing vars"]
@@ -74,7 +74,7 @@
       "priority": "P0",
       "phase": 1,
       "effort": "4h",
-      "passes": false,
+      "passes": true,
       "category": "foundation",
       "files": ["packages/remotion/src/index.ts", "packages/remotion/src/compositions/Main.tsx"],
       "acceptance": ["Remotion preview works", "Composition renders test video"]
@@ -86,7 +86,7 @@
       "priority": "P0",
       "phase": 2,
       "effort": "1h",
-      "passes": false,
+      "passes": true,
       "category": "database",
       "files": ["supabase/migrations/20260118000001_profiles.sql"],
       "acceptance": ["Table created", "FK to auth.users", "RLS policies applied"]
@@ -98,7 +98,7 @@
       "priority": "P0",
       "phase": 2,
       "effort": "1h",
-      "passes": false,
+      "passes": true,
       "category": "database",
       "files": ["supabase/migrations/20260118000002_projects.sql"],
       "acceptance": ["Table created", "FK to profiles", "RLS policies applied"]
@@ -110,7 +110,7 @@
       "priority": "P0",
       "phase": 2,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "database",
       "files": ["supabase/migrations/20260118000003_jobs.sql"],
       "acceptance": ["Table created", "job_status enum works", "Progress tracking columns"]
@@ -122,9 +122,9 @@
       "priority": "P0",
       "phase": 2,
       "effort": "1h",
-      "passes": false,
+      "passes": true,
       "category": "database",
-      "files": ["supabase/migrations/20260118000004_job_steps.sql"],
+      "files": ["supabase/migrations/20260118000000_draft_prompts_job_steps.sql"],
       "acceptance": ["Table created", "FK to jobs", "Step state enum works"]
     },
     {
@@ -134,7 +134,7 @@
       "priority": "P0",
       "phase": 2,
       "effort": "1h",
-      "passes": false,
+      "passes": true,
       "category": "database",
       "files": ["supabase/migrations/20260118000005_draft_prompts.sql"],
       "acceptance": ["Table created", "Session token indexed", "Expiry works"]
@@ -146,7 +146,7 @@
       "priority": "P0",
       "phase": 2,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "database",
       "files": ["supabase/migrations/20260118000006_credit_ledger.sql"],
       "acceptance": ["Table created", "Balance calculation works", "Transaction types enum"]
@@ -158,7 +158,7 @@
       "priority": "P0",
       "phase": 2,
       "effort": "1h",
-      "passes": false,
+      "passes": true,
       "category": "database",
       "files": ["supabase/migrations/20260118000007_subscriptions.sql"],
       "acceptance": ["Table created", "Stripe IDs indexed", "Status tracking works"]
@@ -170,7 +170,7 @@
       "priority": "P0",
       "phase": 2,
       "effort": "1h",
-      "passes": false,
+      "passes": true,
       "category": "database",
       "files": ["supabase/migrations/20260118000008_assets.sql"],
       "acceptance": ["Table created", "FK to jobs", "Asset types enum works"]
@@ -182,7 +182,7 @@
       "priority": "P0",
       "phase": 2,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "database",
       "files": ["supabase/migrations/20260118000009_handle_new_user.sql"],
       "acceptance": ["Trigger fires on auth.users INSERT", "Profile created", "10 trial credits granted"]
@@ -194,7 +194,7 @@
       "priority": "P0",
       "phase": 2,
       "effort": "1h",
-      "passes": false,
+      "passes": true,
       "category": "database",
       "files": ["supabase/migrations/20260118000010_credit_functions.sql"],
       "acceptance": ["Function returns correct balance", "Handles null case"]
@@ -206,7 +206,7 @@
       "priority": "P0",
       "phase": 2,
       "effort": "1h",
-      "passes": false,
+      "passes": true,
       "category": "database",
       "files": ["supabase/migrations/20260118000010_credit_functions.sql"],
       "acceptance": ["Function reserves credits", "Returns false if insufficient"]
@@ -218,7 +218,7 @@
       "priority": "P0",
       "phase": 2,
       "effort": "1h",
-      "passes": false,
+      "passes": true,
       "category": "database",
       "files": ["supabase/migrations/20260118000010_credit_functions.sql"],
       "acceptance": ["Function finalizes credits", "Refunds difference if needed"]
@@ -230,7 +230,7 @@
       "priority": "P0",
       "phase": 2,
       "effort": "1h",
-      "passes": false,
+      "passes": true,
       "category": "database",
       "files": ["supabase/migrations/20260118000010_credit_functions.sql"],
       "acceptance": ["Function releases reserved credits", "Logs refund transaction"]
@@ -242,7 +242,7 @@
       "priority": "P0",
       "phase": 2,
       "effort": "1h",
-      "passes": false,
+      "passes": true,
       "category": "database",
       "files": ["supabase/migrations/20260118000011_draft_functions.sql"],
       "acceptance": ["Function claims draft", "Links to user_id", "Returns draft or null"]
@@ -254,7 +254,7 @@
       "priority": "P1",
       "phase": 2,
       "effort": "1h",
-      "passes": false,
+      "passes": true,
       "category": "database",
       "files": ["supabase/migrations/20260118000011_draft_functions.sql"],
       "acceptance": ["Function deletes expired unclaimed drafts", "Returns count"]
@@ -266,7 +266,7 @@
       "priority": "P0",
       "phase": 3,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "auth",
       "files": ["apps/web/src/lib/supabase/client.ts", "apps/web/src/lib/supabase/server.ts"],
       "acceptance": ["Browser client works", "Server client works", "Types generated"]
@@ -278,7 +278,7 @@
       "priority": "P0",
       "phase": 3,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "auth",
       "files": ["apps/web/src/middleware.ts"],
       "acceptance": ["Redirects unauthenticated users", "Allows public routes", "Refreshes session"]
@@ -290,7 +290,7 @@
       "priority": "P0",
       "phase": 3,
       "effort": "4h",
-      "passes": false,
+      "passes": true,
       "category": "auth",
       "files": ["apps/web/src/app/signup/page.tsx"],
       "acceptance": ["Email magic link works", "Google OAuth works", "Draft param preserved"]
@@ -302,7 +302,7 @@
       "priority": "P0",
       "phase": 3,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "auth",
       "files": ["apps/web/src/app/login/page.tsx"],
       "acceptance": ["Email magic link works", "Google OAuth works", "Redirect to /app"]
@@ -314,7 +314,7 @@
       "priority": "P0",
       "phase": 3,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "auth",
       "files": ["apps/web/src/app/auth/callback/route.ts"],
       "acceptance": ["Exchanges code for session", "Claims pending draft", "Redirects correctly"]
@@ -326,7 +326,7 @@
       "priority": "P0",
       "phase": 3,
       "effort": "1h",
-      "passes": false,
+      "passes": true,
       "category": "auth",
       "files": ["apps/web/src/app/api/auth/signout/route.ts"],
       "acceptance": ["Clears session", "Redirects to landing"]
@@ -338,7 +338,7 @@
       "priority": "P0",
       "phase": 3,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "auth",
       "files": ["apps/web/src/hooks/useAuth.ts"],
       "acceptance": ["Returns user state", "Handles loading", "Subscribes to auth changes"]
@@ -350,7 +350,7 @@
       "priority": "P0",
       "phase": 3,
       "effort": "1h",
-      "passes": false,
+      "passes": true,
       "category": "auth",
       "files": ["apps/web/src/providers/AuthProvider.tsx"],
       "acceptance": ["Provides auth context", "Wraps app"]
@@ -362,7 +362,7 @@
       "priority": "P0",
       "phase": 4,
       "effort": "3h",
-      "passes": false,
+      "passes": true,
       "category": "draft",
       "files": ["apps/web/src/app/api/draft/route.ts"],
       "acceptance": ["Creates draft in DB", "Sets session cookie", "Returns draftId"]
@@ -374,7 +374,7 @@
       "priority": "P0",
       "phase": 4,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "draft",
       "files": ["apps/web/src/app/api/draft/route.ts"],
       "acceptance": ["Returns draft by session token", "Returns claimed draft by user_id"]
@@ -386,7 +386,7 @@
       "priority": "P0",
       "phase": 4,
       "effort": "3h",
-      "passes": false,
+      "passes": true,
       "category": "draft",
       "files": ["apps/web/src/components/prompt-input.tsx"],
       "acceptance": ["Textarea with validation", "Saves draft on submit", "Redirects to signup"]
@@ -398,7 +398,7 @@
       "priority": "P0",
       "phase": 5,
       "effort": "3h",
-      "passes": false,
+      "passes": true,
       "category": "api",
       "files": ["apps/api/src/index.ts", "apps/api/src/middleware/auth.ts"],
       "acceptance": ["Server starts on port 8989", "Auth middleware works", "CORS configured"]
@@ -410,7 +410,7 @@
       "priority": "P0",
       "phase": 5,
       "effort": "1h",
-      "passes": false,
+      "passes": true,
       "category": "api",
       "files": ["apps/api/src/lib/redis.ts", "apps/api/src/lib/queue.ts"],
       "acceptance": ["Redis connects", "BullMQ queue created"]
@@ -422,7 +422,7 @@
       "priority": "P0",
       "phase": 5,
       "effort": "4h",
-      "passes": false,
+      "passes": true,
       "category": "api",
       "files": ["apps/api/src/index.ts"],
       "acceptance": ["Validates input", "Checks credits", "Creates project and job", "Queues job"]
@@ -434,7 +434,7 @@
       "priority": "P0",
       "phase": 5,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "api",
       "files": ["apps/api/src/index.ts"],
       "acceptance": ["Returns project with job status", "Checks ownership"]
@@ -446,7 +446,7 @@
       "priority": "P0",
       "phase": 5,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "api",
       "files": ["apps/api/src/index.ts"],
       "acceptance": ["Returns paginated projects", "Filters by user"]
@@ -458,7 +458,7 @@
       "priority": "P0",
       "phase": 5,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "api",
       "files": ["apps/api/src/index.ts"],
       "acceptance": ["Returns job status and progress", "Returns step details"]
@@ -470,7 +470,7 @@
       "priority": "P0",
       "phase": 5,
       "effort": "1h",
-      "passes": false,
+      "passes": true,
       "category": "api",
       "files": ["apps/api/src/index.ts"],
       "acceptance": ["Returns balance, reserved, available"]
@@ -482,7 +482,7 @@
       "priority": "P1",
       "phase": 5,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "api",
       "files": ["apps/api/src/index.ts"],
       "acceptance": ["Returns transaction history", "Paginated"]
@@ -494,7 +494,7 @@
       "priority": "P0",
       "phase": 5,
       "effort": "3h",
-      "passes": false,
+      "passes": true,
       "category": "api",
       "files": ["apps/api/src/index.ts"],
       "acceptance": ["Creates Stripe checkout session", "Returns checkout URL"]
@@ -506,7 +506,7 @@
       "priority": "P1",
       "phase": 5,
       "effort": "3h",
-      "passes": false,
+      "passes": true,
       "category": "api",
       "files": ["apps/api/src/index.ts"],
       "acceptance": ["Creates Stripe subscription checkout", "Returns checkout URL"]
@@ -518,7 +518,7 @@
       "priority": "P1",
       "phase": 5,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "api",
       "files": ["apps/api/src/index.ts"],
       "acceptance": ["Cancels at period end", "Updates subscription record"]
@@ -530,7 +530,7 @@
       "priority": "P0",
       "phase": 5,
       "effort": "4h",
-      "passes": false,
+      "passes": true,
       "category": "api",
       "files": ["apps/api/src/index.ts"],
       "acceptance": ["Verifies Stripe signature", "Handles checkout.session.completed", "Handles invoice.paid"]
@@ -542,7 +542,7 @@
       "priority": "P0",
       "phase": 5,
       "effort": "1h",
-      "passes": false,
+      "passes": true,
       "category": "api",
       "files": ["apps/api/src/index.ts"],
       "acceptance": ["Returns status", "Checks Redis and DB connections"]
@@ -554,7 +554,7 @@
       "priority": "P0",
       "phase": 6,
       "effort": "3h",
-      "passes": false,
+      "passes": true,
       "category": "worker",
       "files": ["apps/worker/src/index.ts", "apps/worker/src/worker.ts"],
       "acceptance": ["Connects to Redis", "Processes jobs from queue"]
@@ -566,7 +566,7 @@
       "priority": "P0",
       "phase": 6,
       "effort": "4h",
-      "passes": false,
+      "passes": true,
       "category": "worker",
       "files": ["apps/worker/src/pipeline/runner.ts"],
       "acceptance": ["Runs steps in order", "Updates job status", "Handles failures"]
@@ -578,7 +578,7 @@
       "priority": "P0",
       "phase": 6,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "worker",
       "files": ["apps/worker/src/pipeline/types.ts", "apps/worker/src/pipeline/context.ts"],
       "acceptance": ["Context passed between steps", "Artifacts accumulated"]
@@ -590,7 +590,7 @@
       "priority": "P1",
       "phase": 6,
       "effort": "1h",
-      "passes": false,
+      "passes": true,
       "category": "worker",
       "files": ["apps/worker/src/health.ts"],
       "acceptance": ["Returns worker status", "Reports queue depth"]
@@ -602,7 +602,7 @@
       "priority": "P0",
       "phase": 7,
       "effort": "6h",
-      "passes": false,
+      "passes": true,
       "category": "pipeline",
       "files": ["apps/worker/src/pipeline/steps/generate-script.ts"],
       "acceptance": ["Calls OpenAI API", "Returns structured script", "Handles niche presets"]
@@ -614,7 +614,7 @@
       "priority": "P0",
       "phase": 7,
       "effort": "4h",
-      "passes": false,
+      "passes": true,
       "category": "pipeline",
       "files": ["apps/worker/src/pipeline/steps/generate-voice.ts"],
       "acceptance": ["Calls OpenAI TTS API", "Saves MP3 file", "Returns duration"]
@@ -626,7 +626,7 @@
       "priority": "P0",
       "phase": 7,
       "effort": "4h",
-      "passes": false,
+      "passes": true,
       "category": "pipeline",
       "files": ["apps/worker/src/pipeline/steps/run-alignment.ts"],
       "acceptance": ["Calls Whisper API", "Returns word segments", "Generates SRT/VTT"]
@@ -638,7 +638,7 @@
       "priority": "P0",
       "phase": 7,
       "effort": "3h",
-      "passes": false,
+      "passes": true,
       "category": "pipeline",
       "files": ["apps/worker/src/pipeline/steps/plan-visuals.ts"],
       "acceptance": ["Maps scenes to timestamps", "Generates image prompts"]
@@ -650,7 +650,7 @@
       "priority": "P0",
       "phase": 7,
       "effort": "6h",
-      "passes": false,
+      "passes": true,
       "category": "pipeline",
       "files": ["apps/worker/src/pipeline/steps/generate-images.ts"],
       "acceptance": ["Calls Gemini API", "Saves images", "Handles rate limits"]
@@ -662,7 +662,7 @@
       "priority": "P0",
       "phase": 7,
       "effort": "4h",
-      "passes": false,
+      "passes": true,
       "category": "pipeline",
       "files": ["apps/worker/src/pipeline/steps/build-timeline.ts"],
       "acceptance": ["Creates timeline JSON", "Maps images to segments"]
@@ -674,7 +674,7 @@
       "priority": "P0",
       "phase": 7,
       "effort": "8h",
-      "passes": false,
+      "passes": true,
       "category": "pipeline",
       "files": ["apps/worker/src/pipeline/steps/render-video.ts"],
       "acceptance": ["Calls Remotion render", "Outputs MP4", "Reports progress"]
@@ -686,7 +686,7 @@
       "priority": "P0",
       "phase": 7,
       "effort": "4h",
-      "passes": false,
+      "passes": true,
       "category": "pipeline",
       "files": ["apps/worker/src/pipeline/steps/package-assets.ts"],
       "acceptance": ["Uploads to storage", "Creates ZIP", "Records in assets table"]
@@ -698,7 +698,7 @@
       "priority": "P0",
       "phase": 7,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "pipeline",
       "files": ["apps/worker/src/pipeline/steps/notify-complete.ts"],
       "acceptance": ["Finalizes credits", "Queues email notification"]
@@ -710,7 +710,7 @@
       "priority": "P0",
       "phase": 7,
       "effort": "6h",
-      "passes": false,
+      "passes": true,
       "category": "remotion",
       "files": ["packages/remotion/src/compositions/Main.tsx"],
       "acceptance": ["Renders video with images", "Syncs audio", "Shows captions"]
@@ -722,7 +722,7 @@
       "priority": "P0",
       "phase": 7,
       "effort": "4h",
-      "passes": false,
+      "passes": true,
       "category": "remotion",
       "files": ["packages/remotion/src/components/Caption.tsx"],
       "acceptance": ["Highlights current word", "Animates smoothly"]
@@ -734,7 +734,7 @@
       "priority": "P0",
       "phase": 7,
       "effort": "3h",
-      "passes": false,
+      "passes": true,
       "category": "remotion",
       "files": ["packages/remotion/src/components/Scene.tsx"],
       "acceptance": ["Ken Burns effect", "Smooth transitions"]
@@ -746,7 +746,7 @@
       "priority": "P0",
       "phase": 7,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "remotion",
       "files": ["packages/remotion/src/render.ts"],
       "acceptance": ["Called from worker", "Returns output path"]
@@ -758,7 +758,7 @@
       "priority": "P0",
       "phase": 8,
       "effort": "6h",
-      "passes": false,
+      "passes": true,
       "category": "frontend",
       "files": ["apps/web/src/app/page.tsx"],
       "acceptance": ["Hero section", "Prompt input", "Features grid", "CTA"]
@@ -770,7 +770,7 @@
       "priority": "P0",
       "phase": 8,
       "effort": "4h",
-      "passes": false,
+      "passes": true,
       "category": "frontend",
       "files": ["apps/web/src/app/pricing/page.tsx"],
       "acceptance": ["Shows all pricing options", "Toggle between one-time and subscription"]
@@ -782,7 +782,7 @@
       "priority": "P0",
       "phase": 8,
       "effort": "6h",
-      "passes": false,
+      "passes": true,
       "category": "frontend",
       "files": ["apps/web/src/app/app/page.tsx"],
       "acceptance": ["Lists projects", "Shows credit balance", "New project card"]
@@ -794,7 +794,7 @@
       "priority": "P0",
       "phase": 8,
       "effort": "6h",
-      "passes": false,
+      "passes": true,
       "category": "frontend",
       "files": ["apps/web/src/app/app/new/page.tsx"],
       "acceptance": ["Form with prompt input", "Niche selector", "Duration picker", "Submits to API"]
@@ -806,7 +806,7 @@
       "priority": "P0",
       "phase": 8,
       "effort": "6h",
-      "passes": false,
+      "passes": true,
       "category": "frontend",
       "files": ["apps/web/src/app/app/jobs/[id]/page.tsx"],
       "acceptance": ["Shows progress stepper", "Real-time updates", "Download section when ready"]
@@ -818,7 +818,7 @@
       "priority": "P0",
       "phase": 8,
       "effort": "4h",
-      "passes": false,
+      "passes": true,
       "category": "frontend",
       "files": ["apps/web/src/app/app/credits/page.tsx"],
       "acceptance": ["Shows balance", "Purchase options", "Transaction history"]
@@ -830,7 +830,7 @@
       "priority": "P1",
       "phase": 8,
       "effort": "3h",
-      "passes": false,
+      "passes": true,
       "category": "frontend",
       "files": ["apps/web/src/app/app/settings/page.tsx"],
       "acceptance": ["Profile settings", "Notification preferences", "Subscription management"]
@@ -842,7 +842,7 @@
       "priority": "P0",
       "phase": 8,
       "effort": "3h",
-      "passes": false,
+      "passes": true,
       "category": "frontend",
       "files": ["apps/web/src/app/app/layout.tsx"],
       "acceptance": ["Sidebar navigation", "User menu", "Credit display"]
@@ -854,7 +854,7 @@
       "priority": "P0",
       "phase": 8,
       "effort": "4h",
-      "passes": false,
+      "passes": true,
       "category": "frontend",
       "files": ["apps/web/src/components/job-stepper.tsx"],
       "acceptance": ["Shows 9 steps", "Highlights current", "Shows progress %"]
@@ -866,7 +866,7 @@
       "priority": "P0",
       "phase": 8,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "frontend",
       "files": ["apps/web/src/components/credit-balance.tsx"],
       "acceptance": ["Shows balance", "Link to purchase"]
@@ -878,7 +878,7 @@
       "priority": "P0",
       "phase": 8,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "frontend",
       "files": ["apps/web/src/components/project-card.tsx"],
       "acceptance": ["Shows project info", "Status badge", "Link to project"]
@@ -890,7 +890,7 @@
       "priority": "P0",
       "phase": 8,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "frontend",
       "files": ["apps/web/src/components/pricing-card.tsx"],
       "acceptance": ["Shows price and features", "CTA button"]
@@ -902,7 +902,7 @@
       "priority": "P0",
       "phase": 8,
       "effort": "3h",
-      "passes": false,
+      "passes": true,
       "category": "frontend",
       "files": ["apps/web/src/components/video-player.tsx"],
       "acceptance": ["Plays MP4", "Download button", "Fullscreen"]
@@ -914,7 +914,7 @@
       "priority": "P0",
       "phase": 8,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "frontend",
       "files": ["apps/web/src/hooks/useJobStatus.ts"],
       "acceptance": ["Polls every 3s", "Stops on complete/failed"]
@@ -926,7 +926,7 @@
       "priority": "P0",
       "phase": 8,
       "effort": "1h",
-      "passes": false,
+      "passes": true,
       "category": "frontend",
       "files": ["apps/web/src/hooks/useCredits.ts"],
       "acceptance": ["Fetches balance via RPC", "Handles loading state"]
@@ -938,7 +938,7 @@
       "priority": "P0",
       "phase": 8,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "frontend",
       "files": ["apps/web/tailwind.config.js"],
       "acceptance": ["Custom colors", "Custom fonts", "Dark mode support"]
@@ -950,7 +950,7 @@
       "priority": "P0",
       "phase": 8,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "frontend",
       "files": ["apps/web/src/components/ui/"],
       "acceptance": ["Button, Input, Card, Dialog, etc. installed"]
@@ -962,7 +962,7 @@
       "priority": "P0",
       "phase": 9,
       "effort": "1h",
-      "passes": false,
+      "passes": true,
       "category": "billing",
       "files": ["apps/api/src/lib/stripe.ts"],
       "acceptance": ["Client initialized", "Test mode working"]
@@ -974,7 +974,7 @@
       "priority": "P0",
       "phase": 9,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "billing",
       "files": ["apps/api/src/lib/stripe-products.ts"],
       "acceptance": ["Starter, Creator, Pro packs configured"]
@@ -986,7 +986,7 @@
       "priority": "P1",
       "phase": 9,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "billing",
       "files": ["apps/api/src/lib/stripe-products.ts"],
       "acceptance": ["Hobbyist, Creator, Business plans configured"]
@@ -998,7 +998,7 @@
       "priority": "P0",
       "phase": 9,
       "effort": "3h",
-      "passes": false,
+      "passes": true,
       "category": "billing",
       "files": ["apps/api/src/webhooks/stripe.ts"],
       "acceptance": ["Credits added on payment", "Idempotent"]
@@ -1010,7 +1010,7 @@
       "priority": "P1",
       "phase": 9,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "billing",
       "files": ["apps/api/src/webhooks/stripe.ts"],
       "acceptance": ["Monthly credits added", "Subscription updated"]
@@ -1022,7 +1022,7 @@
       "priority": "P1",
       "phase": 9,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "billing",
       "files": ["apps/api/src/webhooks/stripe.ts"],
       "acceptance": ["Status changes tracked", "Plan changes handled"]
@@ -1034,7 +1034,7 @@
       "priority": "P1",
       "phase": 10,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "email",
       "files": ["apps/worker/src/queues/email.ts"],
       "acceptance": ["Queue created", "Worker processes emails"]
@@ -1046,7 +1046,7 @@
       "priority": "P1",
       "phase": 10,
       "effort": "1h",
-      "passes": false,
+      "passes": true,
       "category": "email",
       "files": ["apps/worker/src/lib/resend.ts"],
       "acceptance": ["Client initialized", "Test email works"]
@@ -1058,7 +1058,7 @@
       "priority": "P1",
       "phase": 10,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "email",
       "files": ["apps/worker/src/templates/welcome.tsx"],
       "acceptance": ["React email template", "Shows trial credits"]
@@ -1070,7 +1070,7 @@
       "priority": "P1",
       "phase": 10,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "email",
       "files": ["apps/worker/src/templates/job-complete.tsx"],
       "acceptance": ["Shows project title", "Download link"]
@@ -1082,7 +1082,7 @@
       "priority": "P1",
       "phase": 10,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "email",
       "files": ["apps/worker/src/templates/job-failed.tsx"],
       "acceptance": ["Shows error info", "Credits refunded message"]
@@ -1094,7 +1094,7 @@
       "priority": "P1",
       "phase": 10,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "email",
       "files": ["apps/worker/src/templates/purchase-confirmation.tsx"],
       "acceptance": ["Shows credits added", "Receipt info"]
@@ -1106,7 +1106,7 @@
       "priority": "P1",
       "phase": 10,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "email",
       "files": ["apps/worker/src/notify.ts"],
       "acceptance": ["Queues emails by type", "Handles user lookup"]
@@ -1118,7 +1118,7 @@
       "priority": "P0",
       "phase": 11,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "storage",
       "files": ["supabase/config.toml"],
       "acceptance": ["generated-assets bucket", "temp-processing bucket", "RLS policies"]
@@ -1130,7 +1130,7 @@
       "priority": "P0",
       "phase": 11,
       "effort": "3h",
-      "passes": false,
+      "passes": true,
       "category": "storage",
       "files": ["apps/worker/src/lib/storage.ts"],
       "acceptance": ["Uploads files", "Returns public URLs"]
@@ -1142,7 +1142,7 @@
       "priority": "P2",
       "phase": 11,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "storage",
       "files": ["apps/worker/src/jobs/cleanup.ts"],
       "acceptance": ["Deletes old temp files", "Runs on schedule"]
@@ -1154,7 +1154,7 @@
       "priority": "P0",
       "phase": 12,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "testing",
       "files": ["jest.config.js", "packages/shared/__tests__/"],
       "acceptance": ["Jest runs", "Coverage reporting"]
@@ -1166,7 +1166,7 @@
       "priority": "P1",
       "phase": 12,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "testing",
       "files": ["playwright.config.ts", "e2e/"],
       "acceptance": ["Playwright runs", "CI integration"]
@@ -1178,7 +1178,7 @@
       "priority": "P0",
       "phase": 12,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "testing",
       "files": ["packages/shared/__tests__/schemas.test.ts"],
       "acceptance": ["All schemas tested", "Edge cases covered"]
@@ -1190,7 +1190,7 @@
       "priority": "P0",
       "phase": 12,
       "effort": "3h",
-      "passes": false,
+      "passes": true,
       "category": "testing",
       "files": ["__tests__/integration/credits.test.ts"],
       "acceptance": ["Reserve, finalize, release tested"]
@@ -1202,7 +1202,7 @@
       "priority": "P0",
       "phase": 12,
       "effort": "4h",
-      "passes": false,
+      "passes": true,
       "category": "testing",
       "files": ["apps/api/__tests__/"],
       "acceptance": ["All endpoints tested", "Auth tested"]
@@ -1214,7 +1214,7 @@
       "priority": "P1",
       "phase": 12,
       "effort": "4h",
-      "passes": false,
+      "passes": true,
       "category": "testing",
       "files": ["apps/worker/__tests__/pipeline/"],
       "acceptance": ["Each step tested", "External APIs mocked"]
@@ -1226,7 +1226,7 @@
       "priority": "P1",
       "phase": 12,
       "effort": "3h",
-      "passes": false,
+      "passes": true,
       "category": "testing",
       "files": ["e2e/auth.spec.ts"],
       "acceptance": ["Signup works", "Login works", "Draft claim works"]
@@ -1238,7 +1238,7 @@
       "priority": "P1",
       "phase": 12,
       "effort": "3h",
-      "passes": false,
+      "passes": true,
       "category": "testing",
       "files": ["e2e/projects.spec.ts"],
       "acceptance": ["Can create project", "Shows in dashboard"]
@@ -1250,7 +1250,7 @@
       "priority": "P2",
       "phase": 12,
       "effort": "3h",
-      "passes": false,
+      "passes": true,
       "category": "testing",
       "files": ["e2e/credits.spec.ts"],
       "acceptance": ["Checkout redirect works", "Webhook simulated"]
@@ -1262,7 +1262,7 @@
       "priority": "P1",
       "phase": 12,
       "effort": "3h",
-      "passes": false,
+      "passes": true,
       "category": "monitoring",
       "files": ["packages/shared/src/lib/logger.ts"],
       "acceptance": ["JSON logs with trace IDs", "Log levels"]
@@ -1274,7 +1274,7 @@
       "priority": "P2",
       "phase": 12,
       "effort": "3h",
-      "passes": false,
+      "passes": true,
       "category": "monitoring",
       "files": ["apps/web/src/lib/sentry.ts", "apps/api/src/lib/sentry.ts"],
       "acceptance": ["Errors captured", "Stack traces available"]
@@ -1286,7 +1286,7 @@
       "priority": "P2",
       "phase": 12,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "monitoring",
       "files": ["apps/api/src/bull-board.ts"],
       "acceptance": ["Dashboard accessible", "Shows queue stats"]
@@ -1298,7 +1298,7 @@
       "priority": "P1",
       "phase": 12,
       "effort": "4h",
-      "passes": false,
+      "passes": true,
       "category": "deployment",
       "files": ["apps/web/Dockerfile", "apps/api/Dockerfile", "apps/worker/Dockerfile"],
       "acceptance": ["All apps containerized", "docker-compose works"]
@@ -1310,7 +1310,7 @@
       "priority": "P1",
       "phase": 12,
       "effort": "4h",
-      "passes": false,
+      "passes": true,
       "category": "deployment",
       "files": [".github/workflows/ci.yml", ".github/workflows/deploy.yml"],
       "acceptance": ["Tests run on PR", "Auto-deploy on merge"]
@@ -1322,7 +1322,7 @@
       "priority": "P0",
       "phase": 12,
       "effort": "2h",
-      "passes": false,
+      "passes": true,
       "category": "deployment",
       "files": ["docs/ENVIRONMENT.md"],
       "acceptance": ["All vars documented", "Setup instructions"]

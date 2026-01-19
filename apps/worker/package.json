@@ -12,21 +12,28 @@
   },
   "dependencies": {
     "@canvascast/shared": "workspace:*",
+    "@react-email/components": "^1.0.4",
+    "@react-email/render": "^2.0.2",
     "@remotion/bundler": "^4.0.0",
     "@remotion/renderer": "^4.0.0",
     "@supabase/supabase-js": "^2.45.0",
     "archiver": "^7.0.1",
+    "bullmq": "^5.1.0",
     "dotenv": "^16.4.5",
     "groq-sdk": "^0.37.0",
+    "ioredis": "^5.3.2",
     "mammoth": "^1.8.0",
     "openai": "^4.68.0",
     "pdf-parse": "^1.1.1",
+    "react": "^19.2.3",
+    "resend": "^4.0.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/archiver": "^6.0.2",
     "@types/node": "^20.11.0",
     "@types/pdf-parse": "^1.1.4",
+    "@types/react": "^18.3.12",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3"
   }

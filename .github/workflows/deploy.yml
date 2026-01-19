@@ -1,0 +1,135 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build all packages
+        run: pnpm build
+
+      - name: Build API
+        run: pnpm build:api
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.CONTAINER_REGISTRY }}
+          username: ${{ secrets.CONTAINER_USERNAME }}
+          password: ${{ secrets.CONTAINER_PASSWORD }}
+        if: env.CONTAINER_REGISTRY != ''
+        env:
+          CONTAINER_REGISTRY: ${{ secrets.CONTAINER_REGISTRY }}
+
+      - name: Build and push Web Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: apps/web/Dockerfile
+          push: ${{ secrets.CONTAINER_REGISTRY != '' }}
+          tags: |
+            ${{ secrets.CONTAINER_REGISTRY }}/canvascast-web:latest
+            ${{ secrets.CONTAINER_REGISTRY }}/canvascast-web:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+        if: env.CONTAINER_REGISTRY != ''
+        env:
+          CONTAINER_REGISTRY: ${{ secrets.CONTAINER_REGISTRY }}
+
+      - name: Build and push API Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          push: ${{ secrets.CONTAINER_REGISTRY != '' }}
+          tags: |
+            ${{ secrets.CONTAINER_REGISTRY }}/canvascast-api:latest
+            ${{ secrets.CONTAINER_REGISTRY }}/canvascast-api:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+        if: env.CONTAINER_REGISTRY != ''
+        env:
+          CONTAINER_REGISTRY: ${{ secrets.CONTAINER_REGISTRY }}
+
+      - name: Build and push Worker Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: apps/worker/Dockerfile
+          push: ${{ secrets.CONTAINER_REGISTRY != '' }}
+          tags: |
+            ${{ secrets.CONTAINER_REGISTRY }}/canvascast-worker:latest
+            ${{ secrets.CONTAINER_REGISTRY }}/canvascast-worker:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+        if: env.CONTAINER_REGISTRY != ''
+        env:
+          CONTAINER_REGISTRY: ${{ secrets.CONTAINER_REGISTRY }}
+
+      - name: Docker build dry-run (when no registry configured)
+        run: |
+          echo "Building Docker images (dry-run)..."
+          docker build -f apps/web/Dockerfile -t canvascast-web:latest .
+          docker build -f apps/api/Dockerfile -t canvascast-api:latest .
+          docker build -f apps/worker/Dockerfile -t canvascast-worker:latest .
+          echo "Docker builds completed successfully (not pushed)"
+        if: env.CONTAINER_REGISTRY == ''
+        env:
+          CONTAINER_REGISTRY: ${{ secrets.CONTAINER_REGISTRY }}
+
+      - name: Deploy to production
+        run: |
+          echo "Deployment step placeholder"
+          echo "Configure this step to deploy to your hosting platform:"
+          echo "- Vercel for web app"
+          echo "- AWS/GCP/Azure for API and Worker"
+          echo "- Or use your preferred deployment method"
+        if: env.DEPLOY_ENABLED == 'true'
+        env:
+          DEPLOY_ENABLED: ${{ secrets.DEPLOY_ENABLED }}
+
+      - name: Notify deployment status
+        run: |
+          echo "Deployment completed for commit ${{ github.sha }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Triggered by: ${{ github.actor }}"

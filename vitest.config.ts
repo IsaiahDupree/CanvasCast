@@ -4,8 +4,8 @@ import path from "path";
 export default defineConfig({
   test: {
     globals: true,
-    environment: "node",
-    include: ["**/*.{test,spec}.{js,ts}"],
+    environment: "jsdom",
+    include: ["**/*.{test,spec}.{js,ts,tsx}"],
     exclude: ["**/node_modules/**", "**/dist/**", "**/e2e/**"],
     coverage: {
       provider: "v8",
@@ -24,7 +24,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./"),
+      "@": path.resolve(__dirname, "./apps/web/src"),
       "@canvascast/shared": path.resolve(__dirname, "./packages/shared/src"),
     },
   },

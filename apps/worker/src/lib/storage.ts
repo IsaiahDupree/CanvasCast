@@ -4,7 +4,7 @@ import { createAdminSupabase } from "./supabase";
 const supabase = createAdminSupabase();
 
 export interface StorageRef {
-  bucket: "project-assets" | "project-outputs";
+  bucket: "generated-assets" | "voice-samples" | "temp-processing";
   path: string;
 }
 
@@ -15,11 +15,11 @@ export function splitBucketPath(fullPath: string): StorageRef | null {
   const bucket = parts[0];
   const path = parts.slice(1).join("/");
 
-  if (bucket !== "project-assets" && bucket !== "project-outputs") {
+  if (bucket !== "generated-assets" && bucket !== "voice-samples" && bucket !== "temp-processing") {
     return null;
   }
 
-  return { bucket, path };
+  return { bucket: bucket as StorageRef["bucket"], path };
 }
 
 export function joinBucketPath(ref: StorageRef): string {

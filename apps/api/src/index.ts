@@ -2,13 +2,15 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import multer from 'multer';
-import { Queue } from 'bullmq';
-import { Redis } from 'ioredis';
 import { v4 as uuidv4 } from 'uuid';
 import { createClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
 import { config } from 'dotenv';
 import os from 'os';
+import { createRedisClient, getRedisStatus } from './lib/redis.js';
+import { createJobQueue, getJobQueue } from './lib/queue.js';
+import { getStripeClient } from './lib/stripe.js';
+import { createBullBoard, BULL_BOARD_PATH } from './bull-board.js';
 
 config();
 
@@ -33,48 +35,9 @@ const NICHE_PRESETS = {
   science: { name: 'Science', creditsPerMinute: 1 },
 };
 
-// Redis connection
-let redisConnected = false;
-const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
-  maxRetriesPerRequest: 3,
-  connectTimeout: 5000,
-  lazyConnect: true,
-  enableOfflineQueue: false,
-});
-
-redis.on('connect', () => {
-  console.log('[REDIS] ✅ Connected');
-  redisConnected = true;
-});
-
-redis.on('error', (err: Error) => {
-  console.error('[REDIS] ❌ Connection error:', err.message);
-  redisConnected = false;
-});
-
-redis.on('close', () => {
-  console.log('[REDIS] 🔌 Connection closed');
-  redisConnected = false;
-});
-
-redis.connect().catch((err: Error) => {
-  console.error('[REDIS] ❌ Initial connection failed:', err.message);
-});
-
-// Job queue - use URL string to avoid ioredis version conflicts
-const jobQueue = new Queue('video-generation', {
-  connection: {
-    host: new URL(process.env.REDIS_URL || 'redis://localhost:6379').hostname,
-    port: parseInt(new URL(process.env.REDIS_URL || 'redis://localhost:6379').port || '6379'),
-  },
-  defaultJobOptions: {
-    attempts: 3,
-    backoff: { type: 'exponential', delay: 5000 },
-    removeOnComplete: 100,
-    removeOnFail: 50,
-  },
-});
-console.log('[QUEUE] ✅ Job queue initialized');
+// Initialize Redis client and job queue
+const redis = createRedisClient();
+const jobQueue = createJobQueue();
 
 // Supabase client
 const supabase = createClient(
@@ -83,7 +46,7 @@ const supabase = createClient(
 );
 
 // Stripe client
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '');
+const stripe = getStripeClient();
 
 // Middleware
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
@@ -98,6 +61,13 @@ const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 50 * 1024 * 1024 }, // 50MB for voice samples
 });
+
+// Setup Bull Board dashboard for queue monitoring
+if (jobQueue) {
+  const bullBoardAdapter = createBullBoard([jobQueue]);
+  app.use(BULL_BOARD_PATH, bullBoardAdapter.getRouter());
+  console.log(`[BULL-BOARD] Dashboard available at ${BULL_BOARD_PATH}`);
+}
 
 // Auth middleware
 interface AuthenticatedRequest extends express.Request {
@@ -135,7 +105,7 @@ app.get('/health', (req, res) => {
 
 app.get('/ready', async (req, res) => {
   const checks = {
-    redis: redisConnected,
+    redis: getRedisStatus(),
     supabase: false,
   };
 
@@ -388,18 +358,29 @@ app.get('/api/v1/credits/balance', authenticateToken, async (req: AuthenticatedR
 // Get credit history
 app.get('/api/v1/credits/history', authenticateToken, async (req: AuthenticatedRequest, res) => {
   try {
+    // Parse pagination parameters
+    const limit = Math.min(parseInt(req.query.limit as string) || 50, 100);
+    const offset = Math.max(parseInt(req.query.offset as string) || 0, 0);
+
     const { data, error } = await supabase
       .from('credit_ledger')
       .select('*')
       .eq('user_id', req.user!.id)
       .order('created_at', { ascending: false })
-      .limit(50);
+      .range(offset, offset + limit - 1);
 
     if (error) {
       return res.status(500).json({ error: 'Failed to fetch history' });
     }
 
-    res.json({ transactions: data });
+    res.json({
+      transactions: data,
+      pagination: {
+        limit,
+        offset,
+        count: data?.length || 0
+      }
+    });
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch history' });
   }
@@ -457,6 +438,99 @@ app.post('/api/v1/credits/purchase', authenticateToken, async (req: Authenticate
   }
 });
 
+// Create subscription checkout session
+app.post('/api/v1/subscriptions', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    const { plan, price_id } = req.body;
+    const userId = req.user!.id;
+
+    // Get or create Stripe customer
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('stripe_customer_id, email')
+      .eq('id', userId)
+      .single();
+
+    let customerId = profile?.stripe_customer_id;
+
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email: profile?.email || req.user?.email,
+        metadata: { user_id: userId },
+      });
+      customerId = customer.id;
+
+      await supabase
+        .from('profiles')
+        .update({ stripe_customer_id: customerId })
+        .eq('id', userId);
+    }
+
+    // Create checkout session for subscription
+    const session = await stripe.checkout.sessions.create({
+      customer: customerId,
+      mode: 'subscription',
+      payment_method_types: ['card'],
+      line_items: [{
+        price: price_id,
+        quantity: 1,
+      }],
+      metadata: {
+        user_id: userId,
+        plan: plan,
+      },
+      success_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/app/credits?success=true`,
+      cancel_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/app/credits?canceled=true`,
+    });
+
+    res.json({ checkout_url: session.url });
+  } catch (error) {
+    console.error('[API] Stripe error:', error);
+    res.status(500).json({ error: 'Failed to create subscription checkout' });
+  }
+});
+
+// Cancel subscription at period end
+app.post('/api/v1/subscriptions/cancel', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    const userId = req.user!.id;
+
+    // Get user's active subscription
+    const { data: subscription, error: fetchError } = await supabase
+      .from('subscriptions')
+      .select('stripe_subscription_id, current_period_end')
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .single();
+
+    if (fetchError || !subscription) {
+      return res.status(404).json({ error: 'No active subscription found' });
+    }
+
+    // Update subscription in Stripe to cancel at period end
+    const updatedSubscription = await stripe.subscriptions.update(
+      subscription.stripe_subscription_id,
+      { cancel_at_period_end: true }
+    );
+
+    // Update subscription record in database
+    await supabase
+      .from('subscriptions')
+      .update({ cancel_at_period_end: true })
+      .eq('stripe_subscription_id', subscription.stripe_subscription_id);
+
+    res.json({
+      message: 'Subscription will cancel at period end',
+      cancel_at: updatedSubscription.cancel_at
+        ? new Date(updatedSubscription.cancel_at * 1000).toISOString()
+        : subscription.current_period_end,
+    });
+  } catch (error) {
+    console.error('[API] Stripe error:', error);
+    res.status(500).json({ error: 'Failed to cancel subscription' });
+  }
+});
+
 // Stripe webhook handler
 app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature'] as string;
@@ -468,10 +542,12 @@ app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), asyn
       process.env.STRIPE_WEBHOOK_SECRET || ''
     );
 
+    // Handle checkout.session.completed - one-time credit purchases
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session;
       const userId = session.metadata?.user_id;
       const credits = parseInt(session.metadata?.credits || '0', 10);
+      const paymentIntent = session.payment_intent as string;
 
       if (userId && credits > 0) {
         await supabase.rpc('add_credits', {
@@ -479,9 +555,98 @@ app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), asyn
           p_amount: credits,
           p_type: 'purchase',
           p_note: `Purchased ${credits} credits via Stripe`,
+          p_idempotency_key: paymentIntent,
         });
-        console.log(`[API] 💰 Added ${credits} credits to user ${userId}`);
+        console.log(`[API] 💰 Added ${credits} credits to user ${userId} (payment: ${paymentIntent})`);
       }
+    }
+
+    // Handle invoice.paid - subscription renewals
+    if (event.type === 'invoice.paid') {
+      const invoice = event.data.object as Stripe.Invoice;
+
+      // Retrieve subscription to get metadata
+      if (invoice.subscription) {
+        const subscription = await stripe.subscriptions.retrieve(
+          invoice.subscription as string
+        );
+
+        const userId = subscription.metadata?.user_id;
+        const plan = subscription.metadata?.plan;
+
+        // Determine credits based on plan
+        const creditsMap: Record<string, number> = {
+          hobbyist: 30,
+          creator: 100,
+          business: 300,
+        };
+
+        const credits = creditsMap[plan || ''] || 0;
+
+        if (userId && credits > 0) {
+          // Use invoice ID as idempotency key for subscription renewals
+          const idempotencyKey = `invoice_${invoice.id}`;
+
+          await supabase.rpc('add_credits', {
+            p_user_id: userId,
+            p_amount: credits,
+            p_type: 'subscription',
+            p_note: `Monthly ${plan} subscription - ${credits} credits`,
+            p_idempotency_key: idempotencyKey,
+          });
+          console.log(`[API] 💰 Added ${credits} subscription credits to user ${userId} (invoice: ${invoice.id})`);
+
+          // Update subscription record in database
+          await supabase
+            .from('subscriptions')
+            .update({
+              status: subscription.status,
+              current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+              current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+              cancel_at_period_end: subscription.cancel_at_period_end || false,
+            })
+            .eq('stripe_subscription_id', subscription.id);
+          console.log(`[API] 📝 Updated subscription record for ${subscription.id}`);
+        }
+      }
+    }
+
+    // Handle customer.subscription.updated - subscription status/plan changes
+    if (event.type === 'customer.subscription.updated') {
+      const subscription = event.data.object as Stripe.Subscription;
+
+      const userId = subscription.metadata?.user_id;
+      const plan = subscription.metadata?.plan;
+
+      // Update subscription record in database with new status and details
+      await supabase
+        .from('subscriptions')
+        .update({
+          status: subscription.status,
+          plan: plan || null,
+          current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+          current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+          cancel_at_period_end: subscription.cancel_at_period_end || false,
+        })
+        .eq('stripe_subscription_id', subscription.id);
+
+      console.log(`[API] 📝 Updated subscription ${subscription.id}: status=${subscription.status}, cancel_at_period_end=${subscription.cancel_at_period_end}`);
+    }
+
+    // Handle customer.subscription.deleted - subscription cancellation
+    if (event.type === 'customer.subscription.deleted') {
+      const subscription = event.data.object as Stripe.Subscription;
+
+      // Update subscription record to canceled status
+      await supabase
+        .from('subscriptions')
+        .update({
+          status: 'canceled',
+          cancel_at_period_end: false,
+        })
+        .eq('stripe_subscription_id', subscription.id);
+
+      console.log(`[API] 🚫 Subscription ${subscription.id} canceled and marked as deleted`);
     }
 
     res.json({ received: true });
@@ -492,9 +657,31 @@ app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), asyn
 });
 
 // ═══════════════════════════════════════════════════════════════════
-// JOB STATUS ENDPOINTS (for worker callbacks)
+// JOB STATUS ENDPOINTS
 // ═══════════════════════════════════════════════════════════════════
 
+// Get job status (public endpoint for authenticated users)
+app.get('/api/v1/jobs/:id/status', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('jobs')
+      .select('*, job_steps(*)')
+      .eq('id', req.params.id)
+      .eq('user_id', req.user!.id)
+      .single();
+
+    if (error || !data) {
+      return res.status(404).json({ error: 'Job not found' });
+    }
+
+    res.json({ job: data });
+  } catch (error) {
+    console.error('[API] Error fetching job status:', error);
+    res.status(500).json({ error: 'Failed to fetch job status' });
+  }
+});
+
+// Internal job completion callback (for worker)
 app.post('/api/internal/jobs/:jobId/complete', async (req, res) => {
   try {
     const { jobId } = req.params;
@@ -591,8 +778,8 @@ async function startServer(port: number): Promise<void> {
     console.log('╠════════════════════════════════════════════╣');
     console.log(`║  Port:     ${port}                            ║`);
     console.log(`║  ENV:      ${(process.env.NODE_ENV || 'development').padEnd(28)}║`);
-    console.log(`║  Redis:    ${(redisConnected ? '✅ Connected' : '❌ Disconnected').padEnd(28)}║`);
-    console.log(`║  Queue:    ${(jobQueue ? '✅ Ready' : '❌ Unavailable').padEnd(28)}║`);
+    console.log(`║  Redis:    ${(getRedisStatus() ? '✅ Connected' : '❌ Disconnected').padEnd(28)}║`);
+    console.log(`║  Queue:    ${(getJobQueue() ? '✅ Ready' : '❌ Unavailable').padEnd(28)}║`);
     console.log('╚════════════════════════════════════════════╝');
     console.log('');
   });

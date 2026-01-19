@@ -1,11 +1,9 @@
-import { createClient } from "@supabase/supabase-js";
+import { createAdminSupabase } from "../../lib/supabase";
+import { insertJobEvent } from "../../lib/db";
 import type { PipelineContext, StepResult, VisualPlan, VisualSlot, WhisperSegment } from "../types";
 import { createStepResult, createStepError } from "../types";
 
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabase = createAdminSupabase();
 
 const DEFAULT_CADENCE_MS = 8000; // Change image every 8 seconds
 
@@ -13,17 +11,28 @@ export async function planVisuals(
   ctx: PipelineContext
 ): Promise<StepResult<{ plan: VisualPlan }>> {
   try {
+    await insertJobEvent(ctx.jobId, "VISUAL_PLAN", "Planning visual sequence...");
+
     const script = ctx.artifacts.script;
     const segments = ctx.artifacts.whisperSegments;
 
-    if (!script || !segments || segments.length === 0) {
-      return createStepError("ERR_VISUAL_PLAN", "Missing script or whisper segments");
+    if (!script) {
+      await insertJobEvent(ctx.jobId, "VISUAL_PLAN", "No script available", "error");
+      return createStepError("ERR_VISUAL_PLAN", "Script artifact is required for visual planning");
+    }
+
+    if (!segments || segments.length === 0) {
+      await insertJobEvent(ctx.jobId, "VISUAL_PLAN", "No whisper segments available", "error");
+      return createStepError("ERR_VISUAL_PLAN", "Whisper segments are required for visual planning");
     }
 
     // Determine cadence based on image density setting
     let cadenceMs = DEFAULT_CADENCE_MS;
-    if (ctx.project.image_density === "low") cadenceMs = 12000;
-    if (ctx.project.image_density === "high") cadenceMs = 5000;
+    if (ctx.project.image_density === "low") cadenceMs = 10000; // 10 seconds
+    if (ctx.project.image_density === "normal") cadenceMs = 7000; // 7 seconds
+    if (ctx.project.image_density === "high") cadenceMs = 4000; // 4 seconds
+
+    await insertJobEvent(ctx.jobId, "VISUAL_PLAN", `Using ${ctx.project.image_density || 'normal'} image density (${cadenceMs}ms per image)`);
 
     const slots: VisualSlot[] = [];
     let slotId = 0;
@@ -71,11 +80,36 @@ export async function planVisuals(
       cadenceMs,
     };
 
+    await insertJobEvent(ctx.jobId, "VISUAL_PLAN", `Created visual plan with ${slots.length} slots`);
+
     // Upload plan
-    const planPath = `${ctx.basePath}/visuals/plan.json`;
-    await supabase.storage
+    const planPath = `${ctx.basePath}/visuals/visual_plan.json`;
+    const { error: uploadError } = await supabase.storage
       .from("project-assets")
       .upload(planPath, new Blob([JSON.stringify(plan, null, 2)], { type: "application/json" }), { upsert: true });
+
+    if (uploadError) {
+      await insertJobEvent(ctx.jobId, "VISUAL_PLAN", `Failed to upload visual plan: ${uploadError.message}`, "error");
+      return createStepError("ERR_VISUAL_PLAN", `Failed to upload visual plan: ${uploadError.message}`);
+    }
+
+    // Create asset record
+    const { error: assetError } = await supabase.from("assets").insert({
+      project_id: ctx.projectId,
+      user_id: ctx.userId,
+      job_id: ctx.jobId,
+      type: "other", // visual_plan is stored as 'other' type with metadata
+      storage_path: planPath,
+      metadata_json: { totalImages: slots.length, cadenceMs, assetType: 'visual_plan' },
+    });
+
+    if (assetError) {
+      await insertJobEvent(ctx.jobId, "VISUAL_PLAN", `Failed to create asset record: ${assetError.message}`, "error");
+      return createStepError("ERR_VISUAL_PLAN", `Failed to create asset record: ${assetError.message}`);
+    }
+
+    // Update context artifacts
+    ctx.artifacts.visualPlan = plan;
 
     return createStepResult({ plan });
   } catch (error) {

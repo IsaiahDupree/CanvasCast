@@ -109,12 +109,20 @@ file_size_limit = "50MiB"
 # [storage.image_transformation]
 # enabled = true
 
-# Uncomment to configure local storage buckets
-# [storage.buckets.images]
-# public = false
-# file_size_limit = "50MiB"
-# allowed_mime_types = ["image/png", "image/jpeg"]
-# objects_path = "./images"
+# Storage buckets for CanvasCast
+[storage.buckets.generated-assets]
+public = true
+file_size_limit = "500MiB"
+allowed_mime_types = ["video/mp4", "audio/mpeg", "image/png", "image/jpeg", "text/plain", "application/zip"]
+
+[storage.buckets.voice-samples]
+public = false
+file_size_limit = "50MiB"
+allowed_mime_types = ["audio/wav", "audio/mpeg", "audio/x-m4a"]
+
+[storage.buckets.temp-processing]
+public = false
+file_size_limit = "1GiB"
 
 [auth]
 enabled = true

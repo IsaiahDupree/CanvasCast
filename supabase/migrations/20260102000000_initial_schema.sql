@@ -124,11 +124,13 @@ create table if not exists public.credit_ledger (
   type public.ledger_type not null,
   amount int not null,
   note text,
+  idempotency_key text,
   created_at timestamptz not null default now()
 );
 
 create index if not exists credit_ledger_user_id_idx on public.credit_ledger(user_id);
 create index if not exists credit_ledger_job_id_idx on public.credit_ledger(job_id);
+create unique index if not exists credit_ledger_idempotency_key_idx on public.credit_ledger(idempotency_key) where idempotency_key is not null;
 
 -- Convenience view for balance
 create or replace view public.credit_balance as
@@ -433,14 +435,29 @@ end;
 $$;
 
 -- Add credits to user (for purchases or admin adjustments)
-create or replace function public.add_credits(p_user_id uuid, p_amount int, p_type public.ledger_type, p_note text default null)
+create or replace function public.add_credits(
+  p_user_id uuid,
+  p_amount int,
+  p_type public.ledger_type,
+  p_note text default null,
+  p_idempotency_key text default null
+)
 returns void
 language plpgsql
 security definer
 as $$
 begin
-  insert into public.credit_ledger(user_id, type, amount, note)
-  values (p_user_id, p_type, p_amount, p_note);
+  -- If idempotency_key is provided, check if it already exists
+  if p_idempotency_key is not null then
+    -- Try to insert, but do nothing if idempotency_key already exists
+    insert into public.credit_ledger(user_id, type, amount, note, idempotency_key)
+    values (p_user_id, p_type, p_amount, p_note, p_idempotency_key)
+    on conflict (idempotency_key) do nothing;
+  else
+    -- No idempotency_key, insert normally
+    insert into public.credit_ledger(user_id, type, amount, note, idempotency_key)
+    values (p_user_id, p_type, p_amount, p_note, null);
+  end if;
 end;
 $$;
 
@@ -464,13 +481,13 @@ $$;
 revoke all on function public.reserve_credits(uuid,uuid,int) from public;
 revoke all on function public.release_reserved_credits(uuid,uuid) from public;
 revoke all on function public.finalize_credits(uuid,uuid,int) from public;
-revoke all on function public.add_credits(uuid,int,public.ledger_type,text) from public;
+revoke all on function public.add_credits(uuid,int,public.ledger_type,text,text) from public;
 revoke all on function public.get_credit_balance(uuid) from public;
 
 grant execute on function public.reserve_credits(uuid,uuid,int) to anon, authenticated;
 grant execute on function public.release_reserved_credits(uuid,uuid) to anon, authenticated;
 grant execute on function public.finalize_credits(uuid,uuid,int) to anon, authenticated;
-grant execute on function public.add_credits(uuid,int,public.ledger_type,text) to anon, authenticated;
+grant execute on function public.add_credits(uuid,int,public.ledger_type,text,text) to anon, authenticated;
 grant execute on function public.get_credit_balance(uuid) to anon, authenticated;
 
 -- =========================

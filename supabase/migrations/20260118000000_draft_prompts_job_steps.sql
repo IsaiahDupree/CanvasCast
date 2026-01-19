@@ -63,7 +63,11 @@ BEGIN
 END$$;
 
 -- Step status enum
-CREATE TYPE IF NOT EXISTS step_status AS ENUM ('pending', 'started', 'succeeded', 'failed', 'skipped');
+DO $$ BEGIN
+  CREATE TYPE step_status AS ENUM ('pending', 'started', 'succeeded', 'failed', 'skipped');
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
 
 -- Job steps table for granular progress tracking
 CREATE TABLE IF NOT EXISTS public.job_steps (

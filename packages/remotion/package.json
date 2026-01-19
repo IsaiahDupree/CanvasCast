@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "remotion studio",
     "build": "remotion render CanvasCastVideo out/video.mp4",
-    "bundle": "remotion bundle"
+    "bundle": "remotion bundle",
+    "test:render": "tsx src/test-render.ts"
   },
   "dependencies": {
     "@canvascast/shared": "workspace:*",
@@ -18,8 +19,10 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/node": "^20.11.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
+    "tsx": "^4.7.0",
     "typescript": "^5.3.3"
   }
 }
