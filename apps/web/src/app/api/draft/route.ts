@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { z } from "zod";
+import { rateLimitByIP } from "@/lib/ratelimit";
 
 const DraftSchema = z.object({
   promptText: z.string().min(10, "Prompt must be at least 10 characters"),
@@ -13,20 +14,69 @@ const DraftSchema = z.object({
 async function getSessionToken(): Promise<string> {
   const cookieStore = await cookies();
   let token = cookieStore.get("draft_session")?.value;
-  
+
   if (!token) {
     token = crypto.randomUUID();
   }
-  
+
   return token;
+}
+
+// Get IP address from request headers
+async function getClientIP(): Promise<string> {
+  const headersList = await headers();
+  const forwardedFor = headersList.get("x-forwarded-for");
+  const realIp = headersList.get("x-real-ip");
+
+  if (forwardedFor) {
+    return forwardedFor.split(",")[0].trim();
+  }
+
+  if (realIp) {
+    return realIp;
+  }
+
+  return "unknown";
 }
 
 // POST - Create or update a draft prompt (pre-auth)
 export async function POST(request: Request) {
   try {
+    const supabase = await createClient();
+
+    // Check if user is authenticated
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // Apply rate limiting for anonymous users only
+    // Authenticated users bypass the rate limit
+    if (!user) {
+      const clientIP = await getClientIP();
+      const rateLimitResult = await rateLimitByIP(clientIP, {
+        requests: 10,
+        window: "1m",
+        prefix: "ratelimit:draft",
+      });
+
+      // Set rate limit headers
+      const response = NextResponse.json(
+        {
+          error: "Too many requests. Please try again later.",
+          retryAfter: Math.ceil((rateLimitResult.reset - Date.now()) / 1000),
+        },
+        { status: 429 }
+      );
+      response.headers.set("X-RateLimit-Limit", rateLimitResult.limit.toString());
+      response.headers.set("X-RateLimit-Remaining", rateLimitResult.remaining.toString());
+      response.headers.set("X-RateLimit-Reset", rateLimitResult.reset.toString());
+
+      if (!rateLimitResult.success) {
+        return response;
+      }
+    }
+
     const body = await request.json();
     const parsed = DraftSchema.safeParse(body);
-    
+
     if (!parsed.success) {
       return NextResponse.json(
         { error: parsed.error.flatten() },
@@ -35,10 +85,6 @@ export async function POST(request: Request) {
     }
 
     const sessionToken = await getSessionToken();
-    const supabase = await createClient();
-    
-    // Check if user is authenticated
-    const { data: { user } } = await supabase.auth.getUser();
     
     // Upsert draft (update if exists for this session, create if not)
     const { data: draft, error } = await supabase

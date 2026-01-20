@@ -51,6 +51,32 @@ async function tryExtractTextFromFile(localPath: string): Promise<string> {
     }
   }
 
+  // Handle audio files (mp3, wav, m4a, webm, mp4, mpeg, mpga)
+  const audioFormats = [".mp3", ".wav", ".m4a", ".webm", ".mp4", ".mpeg", ".mpga"];
+  if (audioFormats.includes(ext)) {
+    try {
+      const { transcribeAudio } = await import("../../services/transcription");
+      const result = await transcribeAudio(localPath);
+
+      // Format transcript with timestamps for context
+      let formatted = `[Audio Transcription - Duration: ${result.duration.toFixed(2)}s]\n\n`;
+
+      if (result.segments && result.segments.length > 0) {
+        formatted += result.segments.map((seg) => {
+          const timestamp = `[${seg.start.toFixed(2)}s - ${seg.end.toFixed(2)}s]`;
+          return `${timestamp} ${seg.text.trim()}`;
+        }).join("\n");
+      } else {
+        formatted += result.text;
+      }
+
+      return formatted;
+    } catch (error) {
+      console.error(`Failed to transcribe audio file ${localPath}:`, error);
+      return "";
+    }
+  }
+
   return "";
 }
 
@@ -104,15 +130,71 @@ export async function ingestInputs(
           continue;
         }
 
-        // For now, assume text files. TODO: Add PDF/DOCX extraction
-        const text = await fileData.text();
-        textParts.push(`## Input: ${input.title ?? "Uploaded File"}`);
-        textParts.push(text);
-        textParts.push("");
-      } else if (input.type === "url" && input.meta?.extracted_text) {
-        textParts.push(`## Input: ${input.title ?? "URL Content"}`);
-        textParts.push(input.meta.extracted_text as string);
-        textParts.push("");
+        // Save file to temporary location for extraction
+        const tempDir = `/tmp/canvascast-${ctx.jobId}`;
+        await fs.mkdir(tempDir, { recursive: true });
+
+        const filename = path.basename(input.storage_path);
+        const tempPath = path.join(tempDir, filename);
+
+        // Write blob to file
+        const buffer = Buffer.from(await fileData.arrayBuffer());
+        await fs.writeFile(tempPath, buffer);
+
+        // Extract text based on file type
+        const extractedText = await tryExtractTextFromFile(tempPath);
+
+        // Clean up temp file
+        await fs.unlink(tempPath).catch(() => {});
+
+        if (extractedText) {
+          textParts.push(`## Input: ${input.title ?? "Uploaded File"}`);
+          textParts.push(extractedText);
+          textParts.push("");
+        }
+      } else if (input.type === "url" && input.content_text) {
+        try {
+          // Import the URL scraper service
+          const { scrapeUrl } = await import("../../services/url-scraper");
+
+          // Scrape the URL
+          const scraped = await scrapeUrl(input.content_text);
+
+          // Add the scraped content
+          textParts.push(`## Input: ${input.title ?? scraped.metadata.title ?? "URL Content"}`);
+          textParts.push(`Source: ${input.content_text}`);
+          textParts.push("");
+
+          // Add metadata if available
+          if (scraped.metadata.description) {
+            textParts.push(`Description: ${scraped.metadata.description}`);
+            textParts.push("");
+          }
+
+          if (scraped.metadata.author) {
+            textParts.push(`Author: ${scraped.metadata.author}`);
+            textParts.push("");
+          }
+
+          // Add the main content
+          textParts.push(scraped.content);
+          textParts.push("");
+
+          // Add image references if any
+          if (scraped.images.length > 0) {
+            textParts.push(`Referenced Images (${scraped.images.length}):`);
+            scraped.images.slice(0, 5).forEach((img, idx) => {
+              textParts.push(`  ${idx + 1}. ${img}`);
+            });
+            textParts.push("");
+          }
+        } catch (error) {
+          console.warn(`Failed to scrape URL ${input.content_text}:`, error);
+          // Fallback: just use the URL as text
+          textParts.push(`## Input: ${input.title ?? "URL Content"}`);
+          textParts.push(`URL: ${input.content_text}`);
+          textParts.push("");
+        }
       }
     }
 

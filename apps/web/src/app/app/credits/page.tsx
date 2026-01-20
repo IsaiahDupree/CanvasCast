@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { CreditCard, Check, Loader2, ExternalLink, Zap, Crown, Rocket } from "lucide-react";
 import { createBrowserClient } from "@supabase/ssr";
 import { PRICING_TIERS, CREDIT_PACKS } from "@canvascast/shared";
+import { trackFunnelEvent, FUNNEL_EVENTS } from "@/lib/analytics";
 
 const TIER_ICONS = {
   starter: Zap,
@@ -18,6 +19,7 @@ export default function CreditsPage() {
   const [purchasing, setPurchasing] = useState<string | null>(null);
   const [subscriptionTier, setSubscriptionTier] = useState<string | null>(null);
   const searchParams = useSearchParams();
+  const paidConversionTracked = useRef(false);
 
   const success = searchParams.get("success");
   const canceled = searchParams.get("canceled");
@@ -56,6 +58,53 @@ export default function CreditsPage() {
   useEffect(() => {
     fetchCredits();
   }, [fetchCredits]);
+
+  // Track paid conversion (first purchase)
+  useEffect(() => {
+    if (success === "true" && !paidConversionTracked.current) {
+      paidConversionTracked.current = true;
+
+      const trackPaidConversion = async () => {
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) return;
+
+          // Check if this is the user's first purchase
+          const { data: transactions } = await supabase
+            .from("credit_ledger")
+            .select("id")
+            .eq("user_id", user.id)
+            .in("type", ["purchase", "subscription"])
+            .order("created_at", { ascending: true })
+            .limit(2);
+
+          // If this is their first purchase, track funnel event
+          if (transactions && transactions.length === 1) {
+            // Get the most recent transaction details
+            const { data: recentTransaction } = await supabase
+              .from("credit_ledger")
+              .select("amount, type, note")
+              .eq("user_id", user.id)
+              .in("type", ["purchase", "subscription"])
+              .order("created_at", { ascending: false })
+              .limit(1)
+              .single();
+
+            trackFunnelEvent(FUNNEL_EVENTS.PAID_CONVERSION, {
+              user_id: user.id,
+              amount: recentTransaction?.amount || 0,
+              product_type: recentTransaction?.type === "subscription" ? "subscription" : "credit_pack",
+              currency: "USD",
+            });
+          }
+        } catch (error) {
+          console.error("Error tracking paid conversion:", error);
+        }
+      };
+
+      trackPaidConversion();
+    }
+  }, [success, supabase]);
 
   async function handlePurchase(packId: string, isSubscription: boolean = false) {
     setPurchasing(packId);

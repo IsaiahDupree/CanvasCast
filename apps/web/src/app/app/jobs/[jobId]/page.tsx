@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -14,6 +14,9 @@ import {
   Play,
   RefreshCw,
 } from "lucide-react";
+import RetryStepButton from "@/components/RetryStepButton";
+import { trackFunnelEvent, FUNNEL_EVENTS } from "@/lib/analytics";
+import { createClient } from "@/lib/supabase/client";
 
 interface JobStep {
   name: string;
@@ -72,6 +75,7 @@ export default function JobStatusPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [emailNotify, setEmailNotify] = useState(true);
+  const firstVideoTracked = useRef(false);
 
   const fetchStatus = useCallback(async () => {
     try {
@@ -103,12 +107,43 @@ export default function JobStatusPage() {
     return () => clearInterval(interval);
   }, [fetchStatus, job?.state]);
 
-  // Redirect to result page when ready
+  // Track first video completion (funnel event)
   useEffect(() => {
-    if (job?.state === "ready") {
-      // Stay on this page but show download options
+    if (job?.state === "ready" && !firstVideoTracked.current) {
+      firstVideoTracked.current = true;
+
+      // Check if this is user's first video
+      const checkAndTrackFirstVideo = async () => {
+        try {
+          const supabase = createClient();
+          const { data: { user } } = await supabase.auth.getUser();
+
+          if (!user) return;
+
+          // Count completed jobs for this user
+          const { count } = await supabase
+            .from("jobs")
+            .select("*", { count: "exact", head: true })
+            .eq("user_id", user.id)
+            .eq("status", "READY");
+
+          // If this is their first completed video, track funnel event
+          if (count === 1) {
+            trackFunnelEvent(FUNNEL_EVENTS.FIRST_VIDEO_CREATED, {
+              user_id: user.id,
+              job_id: jobId,
+              project_id: job.projectId,
+              niche_preset: job.project?.niche,
+            });
+          }
+        } catch (error) {
+          console.error("Error tracking first video:", error);
+        }
+      };
+
+      checkAndTrackFirstVideo();
     }
-  }, [job?.state, router]);
+  }, [job?.state, jobId, job?.projectId, job?.project?.niche]);
 
   if (loading) {
     return (
@@ -243,6 +278,19 @@ export default function JobStatusPage() {
                     >
                       {step.message || stepInfo.description}
                     </p>
+
+                    {/* Retry Step Button (RESIL-004) */}
+                    {isFailed && (
+                      <div className="mt-3">
+                        <RetryStepButton
+                          jobId={jobId}
+                          stepName={step.name.toUpperCase()}
+                          stepStatus="FAILED"
+                          stepLabel={stepInfo.label}
+                          onRetrySuccess={() => fetchStatus()}
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               );

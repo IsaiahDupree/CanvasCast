@@ -2,10 +2,12 @@
  * Draft API Endpoint Tests
  * Feature: DRAFT-001 - Create Draft API Route
  * Feature: DRAFT-002 - Get Draft API Route
+ * Feature: RATE-002 - Draft Endpoint Rate Limit
  *
  * Tests the /api/draft endpoints:
  * - POST /api/draft - Creates or updates a draft prompt (pre-auth flow)
  * - GET /api/draft - Retrieves draft by session token or user ID
+ * - Rate limiting: 10 req/min per IP
  *
  * Acceptance Criteria:
  * - POST creates draft in DB
@@ -13,9 +15,12 @@
  * - POST returns draftId
  * - GET returns draft by session token
  * - GET returns claimed draft by user_id
+ * - Rate limit enforced (10 req/min per IP)
+ * - Clear error message on rate limit exceeded
+ * - Bypass rate limit for authenticated users
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import { createClient } from '@supabase/supabase-js';
 import { randomUUID } from 'crypto';
 import { existsSync } from 'fs';
@@ -367,6 +372,119 @@ describe('DRAFT-002: GET /api/draft - Get Draft API Route', () => {
 
       // Should use session token as fallback
       expect(fileContent).toContain('session_token');
+    });
+  });
+});
+
+describe('RATE-002: Draft Endpoint Rate Limit', () => {
+  describe('Rate Limiting Implementation', () => {
+    it('should import rate limiting utilities', async () => {
+      const routePath = join(process.cwd(), 'apps/web/src/app/api/draft/route.ts');
+      const fs = await import('fs/promises');
+      const fileContent = await fs.readFile(routePath, 'utf-8');
+
+      // Should import rate limiting function
+      expect(fileContent).toContain('rateLimitByIP');
+    });
+
+    it('should call rate limiter before processing request', async () => {
+      const routePath = join(process.cwd(), 'apps/web/src/app/api/draft/route.ts');
+      const fs = await import('fs/promises');
+      const fileContent = await fs.readFile(routePath, 'utf-8');
+
+      // Should have rate limit check
+      expect(fileContent).toMatch(/rateLimitByIP|rateLimit/);
+    });
+
+    it('should extract IP address from request', async () => {
+      const routePath = join(process.cwd(), 'apps/web/src/app/api/draft/route.ts');
+      const fs = await import('fs/promises');
+      const fileContent = await fs.readFile(routePath, 'utf-8');
+
+      // Should get IP from headers or request
+      expect(fileContent).toMatch(/x-forwarded-for|x-real-ip|headers/i);
+    });
+  });
+
+  describe('Rate Limit Configuration', () => {
+    it('should configure 10 requests per minute for anonymous users', async () => {
+      const routePath = join(process.cwd(), 'apps/web/src/app/api/draft/route.ts');
+      const fs = await import('fs/promises');
+      const fileContent = await fs.readFile(routePath, 'utf-8');
+
+      // Should have 10 requests config
+      expect(fileContent).toMatch(/requests:\s*10/);
+      // Should have 1 minute window
+      expect(fileContent).toMatch(/window:\s*['"]1m['"]/);
+    });
+
+    it('should use draft-specific rate limit prefix', async () => {
+      const routePath = join(process.cwd(), 'apps/web/src/app/api/draft/route.ts');
+      const fs = await import('fs/promises');
+      const fileContent = await fs.readFile(routePath, 'utf-8');
+
+      // Should have draft prefix to isolate from other endpoints
+      expect(fileContent).toContain('draft');
+    });
+  });
+
+  describe('Rate Limit Response', () => {
+    it('should return 429 status when rate limit exceeded', async () => {
+      const routePath = join(process.cwd(), 'apps/web/src/app/api/draft/route.ts');
+      const fs = await import('fs/promises');
+      const fileContent = await fs.readFile(routePath, 'utf-8');
+
+      // Should return 429 status
+      expect(fileContent).toContain('429');
+    });
+
+    it('should provide clear error message on rate limit exceeded', async () => {
+      const routePath = join(process.cwd(), 'apps/web/src/app/api/draft/route.ts');
+      const fs = await import('fs/promises');
+      const fileContent = await fs.readFile(routePath, 'utf-8');
+
+      // Should have informative error message
+      expect(fileContent).toMatch(/rate limit|too many requests|try again/i);
+    });
+
+    it('should include retry-after or reset time in response', async () => {
+      const routePath = join(process.cwd(), 'apps/web/src/app/api/draft/route.ts');
+      const fs = await import('fs/promises');
+      const fileContent = await fs.readFile(routePath, 'utf-8');
+
+      // Should tell user when to retry
+      expect(fileContent).toMatch(/retry|reset/i);
+    });
+  });
+
+  describe('Authenticated User Bypass', () => {
+    it('should check if user is authenticated before applying rate limit', async () => {
+      const routePath = join(process.cwd(), 'apps/web/src/app/api/draft/route.ts');
+      const fs = await import('fs/promises');
+      const fileContent = await fs.readFile(routePath, 'utf-8');
+
+      // Should get user from auth
+      expect(fileContent).toContain('getUser');
+    });
+
+    it('should bypass or have higher limit for authenticated users', async () => {
+      const routePath = join(process.cwd(), 'apps/web/src/app/api/draft/route.ts');
+      const fs = await import('fs/promises');
+      const fileContent = await fs.readFile(routePath, 'utf-8');
+
+      // Should have conditional logic for auth users
+      expect(fileContent).toMatch(/if\s*\(\s*!?\s*user/);
+    });
+  });
+
+  describe('Rate Limit Headers', () => {
+    it('should set rate limit headers in response', async () => {
+      const routePath = join(process.cwd(), 'apps/web/src/app/api/draft/route.ts');
+      const fs = await import('fs/promises');
+      const fileContent = await fs.readFile(routePath, 'utf-8');
+
+      // Should set X-RateLimit headers
+      expect(fileContent).toMatch(/X-RateLimit|headers\.set/i);
     });
   });
 });

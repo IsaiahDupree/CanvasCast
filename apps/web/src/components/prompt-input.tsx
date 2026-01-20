@@ -72,9 +72,13 @@ export function PromptInput() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4" aria-label="Video generation form">
         <div className="relative">
+          <label htmlFor="prompt-textarea" className="sr-only">
+            Describe your video idea
+          </label>
           <textarea
+            id="prompt-textarea"
             value={prompt}
             onChange={(e) => {
               setPrompt(e.target.value);
@@ -83,14 +87,26 @@ export function PromptInput() {
             placeholder="Describe your video idea... e.g., 'Create a motivational video about overcoming fear and taking action'"
             className="w-full h-32 px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none"
             disabled={loading}
+            aria-invalid={error ? "true" : "false"}
+            aria-describedby={error ? "prompt-error" : "prompt-hint"}
+            maxLength={500}
           />
-          <div className="absolute bottom-3 right-3 text-xs text-gray-500">
+          <div
+            id="prompt-hint"
+            className="absolute bottom-3 right-3 text-xs text-gray-500"
+            aria-live="polite"
+          >
             {prompt.length}/500
           </div>
         </div>
 
         {error && (
-          <div className="text-red-400 text-sm text-left bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2">
+          <div
+            id="prompt-error"
+            role="alert"
+            aria-live="assertive"
+            className="text-red-400 text-sm text-left bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2"
+          >
             {error}
           </div>
         )}
@@ -99,20 +115,21 @@ export function PromptInput() {
           type="submit"
           disabled={loading || !prompt.trim()}
           className="w-full px-8 py-4 rounded-xl bg-brand-600 hover:bg-brand-500 disabled:bg-gray-700 disabled:cursor-not-allowed transition font-semibold text-lg flex items-center justify-center gap-2"
+          aria-label={loading ? "Saving your prompt" : "Generate your free video"}
         >
           {loading ? (
             <>
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
               Saving...
             </>
           ) : (
             <>
-              Generate Free Video <ArrowRight className="w-5 h-5" />
+              Generate Free Video <ArrowRight className="w-5 h-5" aria-hidden="true" />
             </>
           )}
         </button>
 
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500" role="status">
           1 free video render. We&apos;ll save your prompt.
         </p>
       </form>
@@ -120,16 +137,17 @@ export function PromptInput() {
       {/* Example prompts */}
       <div className="mt-8">
         <div className="flex items-center gap-2 text-sm text-gray-400 mb-3">
-          <Sparkles className="w-4 h-4" />
+          <Sparkles className="w-4 h-4" aria-hidden="true" />
           <span>Try an example</span>
         </div>
-        <div className="flex flex-wrap gap-2 justify-center">
+        <div className="flex flex-wrap gap-2 justify-center" role="group" aria-label="Example video ideas">
           {EXAMPLE_PROMPTS.map((example) => (
             <button
               key={example.label}
               type="button"
               onClick={() => handleExampleClick(example.prompt)}
               className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-sm text-gray-300 hover:bg-white/10 hover:text-white transition"
+              aria-label={`Use example: ${example.label}`}
             >
               {example.label}
             </button>

@@ -45,7 +45,9 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.1",
     "@testing-library/react-hooks": "^8.0.1",
+    "@types/archiver": "^6.0.2",
     "@types/jest": "^30.0.0",
+    "@types/jsdom": "^27.0.0",
     "@types/node": "^20.11.0",
     "@types/supertest": "^6.0.3",
     "@vitest/coverage-v8": "^4.0.16",
@@ -68,12 +70,15 @@
     "node": ">=20"
   },
   "dependencies": {
+    "@mozilla/readability": "^0.6.0",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-label": "^2.1.8",
     "@radix-ui/react-progress": "^1.1.8",
     "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-separator": "^1.1.8",
     "@radix-ui/react-slot": "^1.2.4",
+    "archiver": "^7.0.1",
+    "cheerio": "^1.1.2",
     "class-variance-authority": "^0.7.1"
   }
 }

@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Bell, Mail, Loader2, CheckCircle, User, CreditCard } from "lucide-react";
+import { Bell, Mail, Loader2, CheckCircle, User, CreditCard, AlertTriangle } from "lucide-react";
 import { createBrowserClient } from "@supabase/ssr";
+import Link from "next/link";
 
 type NotificationPrefs = {
   email_job_started: boolean;
@@ -353,6 +354,26 @@ export default function SettingsPage() {
           "Save Settings"
         )}
       </button>
+
+      {/* Danger Zone */}
+      <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-6 mt-6">
+        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 text-red-400">
+          <AlertTriangle className="w-5 h-5" />
+          Danger Zone
+        </h2>
+
+        <div className="space-y-3">
+          <p className="text-sm text-gray-400">
+            Once you delete your account, there is no going back. Please be certain.
+          </p>
+          <Link
+            href="/app/settings/delete-account"
+            className="inline-block w-full text-center py-3 rounded-lg bg-red-600/20 hover:bg-red-600/30 text-red-400 transition font-semibold"
+          >
+            Delete Account
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }

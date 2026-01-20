@@ -111,9 +111,9 @@ async function generateSingleImage(
     let imageBuffer: Buffer;
 
     if (featureFlags.imageProvider === 'gemini' && process.env.GEMINI_API_KEY) {
-      imageBuffer = await generateWithGemini(slot.prompt);
+      imageBuffer = await generateWithGemini(slot.prompt, ctx);
     } else if (featureFlags.imageProvider === 'openai' || !process.env.GEMINI_API_KEY) {
-      imageBuffer = await generateWithOpenAI(slot.prompt);
+      imageBuffer = await generateWithOpenAI(slot.prompt, ctx);
     } else {
       throw new Error(`Unsupported image provider: ${featureFlags.imageProvider}`);
     }
@@ -184,22 +184,29 @@ async function generateSingleImage(
 /**
  * Generate image using Gemini Imagen API
  */
-async function generateWithGemini(prompt: string): Promise<Buffer> {
+async function generateWithGemini(prompt: string, ctx: PipelineContext): Promise<Buffer> {
   const gemini = createGeminiClient();
 
-  return await gemini.generateImage({
+  const imageBuffer = await gemini.generateImage({
     prompt: enhancePromptForGemini(prompt),
     aspectRatio: '9:16',
     numberOfImages: 1,
     safetyFilterLevel: 'block_some',
     personGeneration: 'allow_adult',
   });
+
+  // ANALYTICS-004: Track Gemini image generation cost
+  if (ctx.costTracker) {
+    ctx.costTracker.trackGeminiImage('imagen-3.0-generate-001', 1);
+  }
+
+  return imageBuffer;
 }
 
 /**
  * Generate image using OpenAI DALL-E
  */
-async function generateWithOpenAI(prompt: string): Promise<Buffer> {
+async function generateWithOpenAI(prompt: string, ctx: PipelineContext): Promise<Buffer> {
   const openai = getOpenAI();
   const response = await openai.images.generate({
     model: "dall-e-3",
@@ -209,6 +216,11 @@ async function generateWithOpenAI(prompt: string): Promise<Buffer> {
     quality: "standard",
     response_format: "b64_json",
   });
+
+  // ANALYTICS-004: Track DALL-E cost (approximate based on typical Gemini pricing)
+  if (ctx.costTracker) {
+    ctx.costTracker.trackGeminiImage('imagen-3.0-generate-001', 1);
+  }
 
   const base64Image = response.data[0].b64_json;
   if (!base64Image) {

@@ -36,9 +36,33 @@ export async function updateSession(request: NextRequest) {
 
   // Protected routes
   const isProtectedRoute = request.nextUrl.pathname.startsWith("/app");
+  const isAdminRoute = request.nextUrl.pathname.startsWith("/admin");
   const isAuthRoute =
     request.nextUrl.pathname.startsWith("/login") ||
     request.nextUrl.pathname.startsWith("/signup");
+
+  // Admin routes require authentication AND admin role
+  if (isAdminRoute) {
+    if (!user) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      url.searchParams.set("redirect", request.nextUrl.pathname);
+      return NextResponse.redirect(url);
+    }
+
+    // Check if user is admin
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_admin")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile?.is_admin) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/app";
+      return NextResponse.redirect(url);
+    }
+  }
 
   if (isProtectedRoute && !user) {
     const url = request.nextUrl.clone();

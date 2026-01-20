@@ -54,6 +54,7 @@ export function JobStepper({ job }: JobStepperProps) {
 
               {/* Icon circle */}
               <div
+                role="img"
                 className={`relative z-10 flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all ${
                   isComplete
                     ? 'bg-brand-500 border-brand-500 text-white'
@@ -63,13 +64,14 @@ export function JobStepper({ job }: JobStepperProps) {
                     ? 'bg-red-500/20 border-red-500 text-red-400'
                     : 'bg-gray-800 border-gray-700 text-gray-500'
                 }`}
+                aria-label={`${step.label}${isCurrent ? ' in progress' : isComplete ? ' completed' : ''}`}
               >
                 {isComplete && job.status !== 'READY' && index !== activeIndex ? (
-                  <Check className="w-5 h-5" />
+                  <Check className="w-5 h-5" aria-hidden="true" />
                 ) : isCurrent ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
                 ) : (
-                  <Icon className="w-5 h-5" />
+                  <Icon className="w-5 h-5" aria-hidden="true" />
                 )}
               </div>
 

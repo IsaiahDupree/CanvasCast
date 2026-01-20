@@ -11,6 +11,18 @@ import { createRedisClient, getRedisStatus } from './lib/redis.js';
 import { createJobQueue, getJobQueue } from './lib/queue.js';
 import { getStripeClient } from './lib/stripe.js';
 import { createBullBoard, BULL_BOARD_PATH } from './bull-board.js';
+import dlqRouter from './routes/admin/dlq.js';
+import auditLogRouter from './routes/admin/audit-log.js';
+import adminUsersRouter from './routes/admin/users.js';
+import adminQueuesRouter from './routes/admin/queues.js';
+import adminCostsRouter from './routes/admin/costs.js';
+import appealsRouter from './routes/appeals.js';
+import metricsRouter from './routes/metrics.js';
+import apiKeysRouter from './routes/api-keys.js';
+import accountDeletionRouter from './routes/account/delete.js';
+import accountExportRouter from './routes/account/export.js';
+import { moderateContent } from './middleware/moderation.js';
+import { jobCreationRateLimitMiddleware } from './middleware/job-creation-rate-limit.js';
 
 config();
 
@@ -123,7 +135,8 @@ app.get('/ready', async (req, res) => {
 // ═══════════════════════════════════════════════════════════════════
 
 // Create project and queue video generation job
-app.post('/api/v1/projects', authenticateToken, async (req: AuthenticatedRequest, res) => {
+// RATE-003: Apply job creation rate limit
+app.post('/api/v1/projects', authenticateToken, jobCreationRateLimitMiddleware, moderateContent, async (req: AuthenticatedRequest, res) => {
   try {
     const { title, niche_preset, target_minutes, content, voice_profile_id } = req.body;
     const userId = req.user!.id;
@@ -681,6 +694,40 @@ app.get('/api/v1/jobs/:id/status', authenticateToken, async (req: AuthenticatedR
   }
 });
 
+// Retry individual pipeline step (RESIL-004: User Self-Service Retry)
+app.post('/api/v1/jobs/:id/retry-step', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    const { stepName } = req.body;
+
+    if (!stepName || typeof stepName !== 'string') {
+      return res.status(400).json({ error: 'stepName is required' });
+    }
+
+    const { retryStep } = await import('./services/retry-step.js');
+    const result = await retryStep(supabase, {
+      jobId: req.params.id,
+      stepName: stepName as any,
+      userId: req.user!.id,
+    });
+
+    if (!result.success) {
+      const statusCode = result.error?.includes('not found') ? 404 : 400;
+      return res.status(statusCode).json({ error: result.error });
+    }
+
+    res.json({
+      success: true,
+      message: result.message,
+      stepName: result.stepName,
+      newStatus: result.newStatus,
+      checkpointPreserved: result.checkpointPreserved,
+    });
+  } catch (error) {
+    console.error('[API] Error retrying step:', error);
+    res.status(500).json({ error: 'Failed to retry step' });
+  }
+});
+
 // Internal job completion callback (for worker)
 app.post('/api/internal/jobs/:jobId/complete', async (req, res) => {
   try {
@@ -757,6 +804,42 @@ app.get('/api/v1/niches', (req, res) => {
     })),
   });
 });
+
+// ═══════════════════════════════════════════════════════════════════
+// ADMIN ROUTES (RESIL-003: Dead Letter Queue)
+// ═══════════════════════════════════════════════════════════════════
+
+// Mount admin DLQ routes
+// TODO: Add admin authentication middleware
+app.use('/api/admin/dlq', dlqRouter);
+
+// Mount admin audit log routes (MOD-003)
+// TODO: Add admin authentication middleware
+app.use('/api/admin/audit-logs', auditLogRouter);
+
+// Mount admin users routes (ADMIN-003)
+app.use('/api/v1/admin/users', adminUsersRouter);
+
+// Mount admin queues routes (ADMIN-004)
+app.use('/api/v1/admin/queues', adminQueuesRouter);
+
+// Mount admin costs routes (ADMIN-005)
+app.use('/api/v1/admin/costs', adminCostsRouter);
+
+// Mount appeals routes (MOD-004)
+app.use('/api/v1/appeals', authenticateToken, appealsRouter);
+
+// ANALYTICS-003: Metrics endpoints (admin only for now)
+app.use('/api/v1/metrics', metricsRouter);
+
+// RATE-004: API Keys management routes
+app.use('/api/v1/api-keys', authenticateToken, apiKeysRouter);
+
+// GDPR-002: Account deletion routes
+app.use('/api/v1/account', authenticateToken, accountDeletionRouter);
+
+// GDPR-003: Data export routes
+app.use('/api/v1/account', authenticateToken, accountExportRouter);
 
 // 404 handler
 app.use((req, res) => {

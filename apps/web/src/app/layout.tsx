@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/providers/AuthProvider";
+import { PostHogProvider } from "@/providers/PostHogProvider";
+import { CookieConsent } from "@/components/CookieConsent";
+import { SkipLink } from "@/components/SkipLink";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,7 +22,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AuthProvider>{children}</AuthProvider>
+        <SkipLink />
+        <AuthProvider>
+          <PostHogProvider>
+            {children}
+            <CookieConsent />
+          </PostHogProvider>
+        </AuthProvider>
       </body>
     </html>
   );

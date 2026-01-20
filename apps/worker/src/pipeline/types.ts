@@ -63,41 +63,47 @@ export interface PipelineContext {
   userId: string;
   projectId: string;
   jobId: string;
-  
+
   // Storage paths
   basePath: string;  // project-assets/u_{userId}/p_{projectId}/j_{jobId}/
   outputPath: string; // project-outputs/u_{userId}/p_{projectId}/j_{jobId}/
-  
+
   // Artifacts accumulated during pipeline
   artifacts: PipelineArtifacts;
+
+  // Cost tracking (ANALYTICS-004)
+  costTracker?: any; // CostTracker instance
 }
 
 export interface PipelineArtifacts {
   // Inputs
   mergedInputText?: string;
-  
+
   // Script
   outline?: ScriptOutline;
   script?: Script;
-  
+
   // Audio
   sectionAudioPaths?: string[];
   narrationPath?: string;
   narrationDurationMs?: number;
-  
+
   // Alignment
   whisperWords?: WhisperWord[];
   whisperSegments?: WhisperSegment[];
   captionsSrtPath?: string;
-  
+
   // Visuals
   visualPlan?: VisualPlan;
   imagePaths?: string[];
-  
+
   // Timeline (uses local type matching TimelineContractV1)
   timeline?: Record<string, unknown>;
   timelinePath?: string;
-  
+
+  // Preview (REMOTION-006)
+  thumbnailPath?: string;
+
   // Output
   videoPath?: string;
   zipPath?: string;

@@ -16,6 +16,9 @@ import { renderMedia, selectComposition } from '@remotion/renderer';
 import { join } from 'path';
 import type { TimelineV1 } from '@canvascast/shared';
 
+// Re-export templates for easy access from worker
+export * from './templates';
+
 /**
  * Options for video rendering
  */

@@ -2,8 +2,8 @@
   "project": "CanvasCast",
   "description": "AI Video Generation Platform - Transform text prompts into fully produced short-form videos with AI-generated scripts, voiceover, images, and captions",
   "version": "1.0",
-  "totalFeatures": 156,
-  "completedFeatures": 103,
+  "totalFeatures": 147,
+  "completedFeatures": 145,
   "phases": {
     "phase1_foundation": "Project setup, monorepo structure, shared packages",
     "phase2_database": "Supabase schema, migrations, RLS policies, RPC functions",
@@ -16,7 +16,16 @@
     "phase9_billing": "Stripe integration, credits, subscriptions",
     "phase10_email": "Transactional email notifications",
     "phase11_storage": "Asset storage, CDN, file lifecycle",
-    "phase12_testing": "Unit, integration, E2E tests"
+    "phase12_testing": "Unit, integration, E2E tests",
+    "phase13_resilience": "Error recovery, retries, dead letter queue",
+    "phase14_moderation": "Content moderation and safety",
+    "phase15_analytics": "PostHog analytics and metrics",
+    "phase16_admin": "Admin dashboard and tooling",
+    "phase17_documents": "PDF/DOCX extraction and file processing",
+    "phase18_remotion_prod": "Remotion Lambda and production templates",
+    "phase19_rate_limiting": "Rate limiting and abuse prevention",
+    "phase20_gdpr": "Data retention, GDPR, privacy compliance",
+    "phase21_a11y": "Accessibility and WCAG compliance"
   },
   "features": [
     {
@@ -28,8 +37,16 @@
       "effort": "2h",
       "passes": true,
       "category": "foundation",
-      "files": ["pnpm-workspace.yaml", "package.json", "turbo.json"],
-      "acceptance": ["pnpm install works", "All workspaces linked", "turbo dev runs all apps"]
+      "files": [
+        "pnpm-workspace.yaml",
+        "package.json",
+        "turbo.json"
+      ],
+      "acceptance": [
+        "pnpm install works",
+        "All workspaces linked",
+        "turbo dev runs all apps"
+      ]
     },
     {
       "id": "FOUND-002",
@@ -40,8 +57,15 @@
       "effort": "4h",
       "passes": true,
       "category": "foundation",
-      "files": ["packages/shared/src/types/index.ts", "packages/shared/src/types/job.ts", "packages/shared/src/types/project.ts"],
-      "acceptance": ["Types exported correctly", "All apps can import types"]
+      "files": [
+        "packages/shared/src/types/index.ts",
+        "packages/shared/src/types/job.ts",
+        "packages/shared/src/types/project.ts"
+      ],
+      "acceptance": [
+        "Types exported correctly",
+        "All apps can import types"
+      ]
     },
     {
       "id": "FOUND-003",
@@ -52,8 +76,14 @@
       "effort": "4h",
       "passes": true,
       "category": "foundation",
-      "files": ["packages/shared/src/schemas/project.ts", "packages/shared/src/schemas/job.ts"],
-      "acceptance": ["Schemas validate correctly", "API uses schemas for validation"]
+      "files": [
+        "packages/shared/src/schemas/project.ts",
+        "packages/shared/src/schemas/job.ts"
+      ],
+      "acceptance": [
+        "Schemas validate correctly",
+        "API uses schemas for validation"
+      ]
     },
     {
       "id": "FOUND-004",
@@ -64,8 +94,15 @@
       "effort": "1h",
       "passes": true,
       "category": "foundation",
-      "files": ["apps/web/.env.example", "apps/api/.env.example", "apps/worker/.env.example"],
-      "acceptance": ["All env vars documented", "Apps fail gracefully on missing vars"]
+      "files": [
+        "apps/web/.env.example",
+        "apps/api/.env.example",
+        "apps/worker/.env.example"
+      ],
+      "acceptance": [
+        "All env vars documented",
+        "Apps fail gracefully on missing vars"
+      ]
     },
     {
       "id": "FOUND-005",
@@ -76,8 +113,14 @@
       "effort": "4h",
       "passes": true,
       "category": "foundation",
-      "files": ["packages/remotion/src/index.ts", "packages/remotion/src/compositions/Main.tsx"],
-      "acceptance": ["Remotion preview works", "Composition renders test video"]
+      "files": [
+        "packages/remotion/src/index.ts",
+        "packages/remotion/src/compositions/Main.tsx"
+      ],
+      "acceptance": [
+        "Remotion preview works",
+        "Composition renders test video"
+      ]
     },
     {
       "id": "DB-001",
@@ -88,8 +131,14 @@
       "effort": "1h",
       "passes": true,
       "category": "database",
-      "files": ["supabase/migrations/20260118000001_profiles.sql"],
-      "acceptance": ["Table created", "FK to auth.users", "RLS policies applied"]
+      "files": [
+        "supabase/migrations/20260118000001_profiles.sql"
+      ],
+      "acceptance": [
+        "Table created",
+        "FK to auth.users",
+        "RLS policies applied"
+      ]
     },
     {
       "id": "DB-002",
@@ -100,8 +149,14 @@
       "effort": "1h",
       "passes": true,
       "category": "database",
-      "files": ["supabase/migrations/20260118000002_projects.sql"],
-      "acceptance": ["Table created", "FK to profiles", "RLS policies applied"]
+      "files": [
+        "supabase/migrations/20260118000002_projects.sql"
+      ],
+      "acceptance": [
+        "Table created",
+        "FK to profiles",
+        "RLS policies applied"
+      ]
     },
     {
       "id": "DB-003",
@@ -112,8 +167,14 @@
       "effort": "2h",
       "passes": true,
       "category": "database",
-      "files": ["supabase/migrations/20260118000003_jobs.sql"],
-      "acceptance": ["Table created", "job_status enum works", "Progress tracking columns"]
+      "files": [
+        "supabase/migrations/20260118000003_jobs.sql"
+      ],
+      "acceptance": [
+        "Table created",
+        "job_status enum works",
+        "Progress tracking columns"
+      ]
     },
     {
       "id": "DB-004",
@@ -124,8 +185,14 @@
       "effort": "1h",
       "passes": true,
       "category": "database",
-      "files": ["supabase/migrations/20260118000000_draft_prompts_job_steps.sql"],
-      "acceptance": ["Table created", "FK to jobs", "Step state enum works"]
+      "files": [
+        "supabase/migrations/20260118000000_draft_prompts_job_steps.sql"
+      ],
+      "acceptance": [
+        "Table created",
+        "FK to jobs",
+        "Step state enum works"
+      ]
     },
     {
       "id": "DB-005",
@@ -136,8 +203,14 @@
       "effort": "1h",
       "passes": true,
       "category": "database",
-      "files": ["supabase/migrations/20260118000005_draft_prompts.sql"],
-      "acceptance": ["Table created", "Session token indexed", "Expiry works"]
+      "files": [
+        "supabase/migrations/20260118000005_draft_prompts.sql"
+      ],
+      "acceptance": [
+        "Table created",
+        "Session token indexed",
+        "Expiry works"
+      ]
     },
     {
       "id": "DB-006",
@@ -148,8 +221,14 @@
       "effort": "2h",
       "passes": true,
       "category": "database",
-      "files": ["supabase/migrations/20260118000006_credit_ledger.sql"],
-      "acceptance": ["Table created", "Balance calculation works", "Transaction types enum"]
+      "files": [
+        "supabase/migrations/20260118000006_credit_ledger.sql"
+      ],
+      "acceptance": [
+        "Table created",
+        "Balance calculation works",
+        "Transaction types enum"
+      ]
     },
     {
       "id": "DB-007",
@@ -160,8 +239,14 @@
       "effort": "1h",
       "passes": true,
       "category": "database",
-      "files": ["supabase/migrations/20260118000007_subscriptions.sql"],
-      "acceptance": ["Table created", "Stripe IDs indexed", "Status tracking works"]
+      "files": [
+        "supabase/migrations/20260118000007_subscriptions.sql"
+      ],
+      "acceptance": [
+        "Table created",
+        "Stripe IDs indexed",
+        "Status tracking works"
+      ]
     },
     {
       "id": "DB-008",
@@ -172,8 +257,14 @@
       "effort": "1h",
       "passes": true,
       "category": "database",
-      "files": ["supabase/migrations/20260118000008_assets.sql"],
-      "acceptance": ["Table created", "FK to jobs", "Asset types enum works"]
+      "files": [
+        "supabase/migrations/20260118000008_assets.sql"
+      ],
+      "acceptance": [
+        "Table created",
+        "FK to jobs",
+        "Asset types enum works"
+      ]
     },
     {
       "id": "DB-009",
@@ -184,8 +275,14 @@
       "effort": "2h",
       "passes": true,
       "category": "database",
-      "files": ["supabase/migrations/20260118000009_handle_new_user.sql"],
-      "acceptance": ["Trigger fires on auth.users INSERT", "Profile created", "10 trial credits granted"]
+      "files": [
+        "supabase/migrations/20260118000009_handle_new_user.sql"
+      ],
+      "acceptance": [
+        "Trigger fires on auth.users INSERT",
+        "Profile created",
+        "10 trial credits granted"
+      ]
     },
     {
       "id": "DB-010",
@@ -196,8 +293,13 @@
       "effort": "1h",
       "passes": true,
       "category": "database",
-      "files": ["supabase/migrations/20260118000010_credit_functions.sql"],
-      "acceptance": ["Function returns correct balance", "Handles null case"]
+      "files": [
+        "supabase/migrations/20260118000010_credit_functions.sql"
+      ],
+      "acceptance": [
+        "Function returns correct balance",
+        "Handles null case"
+      ]
     },
     {
       "id": "DB-011",
@@ -208,8 +310,13 @@
       "effort": "1h",
       "passes": true,
       "category": "database",
-      "files": ["supabase/migrations/20260118000010_credit_functions.sql"],
-      "acceptance": ["Function reserves credits", "Returns false if insufficient"]
+      "files": [
+        "supabase/migrations/20260118000010_credit_functions.sql"
+      ],
+      "acceptance": [
+        "Function reserves credits",
+        "Returns false if insufficient"
+      ]
     },
     {
       "id": "DB-012",
@@ -220,8 +327,13 @@
       "effort": "1h",
       "passes": true,
       "category": "database",
-      "files": ["supabase/migrations/20260118000010_credit_functions.sql"],
-      "acceptance": ["Function finalizes credits", "Refunds difference if needed"]
+      "files": [
+        "supabase/migrations/20260118000010_credit_functions.sql"
+      ],
+      "acceptance": [
+        "Function finalizes credits",
+        "Refunds difference if needed"
+      ]
     },
     {
       "id": "DB-013",
@@ -232,8 +344,13 @@
       "effort": "1h",
       "passes": true,
       "category": "database",
-      "files": ["supabase/migrations/20260118000010_credit_functions.sql"],
-      "acceptance": ["Function releases reserved credits", "Logs refund transaction"]
+      "files": [
+        "supabase/migrations/20260118000010_credit_functions.sql"
+      ],
+      "acceptance": [
+        "Function releases reserved credits",
+        "Logs refund transaction"
+      ]
     },
     {
       "id": "DB-014",
@@ -244,8 +361,14 @@
       "effort": "1h",
       "passes": true,
       "category": "database",
-      "files": ["supabase/migrations/20260118000011_draft_functions.sql"],
-      "acceptance": ["Function claims draft", "Links to user_id", "Returns draft or null"]
+      "files": [
+        "supabase/migrations/20260118000011_draft_functions.sql"
+      ],
+      "acceptance": [
+        "Function claims draft",
+        "Links to user_id",
+        "Returns draft or null"
+      ]
     },
     {
       "id": "DB-015",
@@ -256,8 +379,13 @@
       "effort": "1h",
       "passes": true,
       "category": "database",
-      "files": ["supabase/migrations/20260118000011_draft_functions.sql"],
-      "acceptance": ["Function deletes expired unclaimed drafts", "Returns count"]
+      "files": [
+        "supabase/migrations/20260118000011_draft_functions.sql"
+      ],
+      "acceptance": [
+        "Function deletes expired unclaimed drafts",
+        "Returns count"
+      ]
     },
     {
       "id": "AUTH-001",
@@ -268,8 +396,15 @@
       "effort": "2h",
       "passes": true,
       "category": "auth",
-      "files": ["apps/web/src/lib/supabase/client.ts", "apps/web/src/lib/supabase/server.ts"],
-      "acceptance": ["Browser client works", "Server client works", "Types generated"]
+      "files": [
+        "apps/web/src/lib/supabase/client.ts",
+        "apps/web/src/lib/supabase/server.ts"
+      ],
+      "acceptance": [
+        "Browser client works",
+        "Server client works",
+        "Types generated"
+      ]
     },
     {
       "id": "AUTH-002",
@@ -280,8 +415,14 @@
       "effort": "2h",
       "passes": true,
       "category": "auth",
-      "files": ["apps/web/src/middleware.ts"],
-      "acceptance": ["Redirects unauthenticated users", "Allows public routes", "Refreshes session"]
+      "files": [
+        "apps/web/src/middleware.ts"
+      ],
+      "acceptance": [
+        "Redirects unauthenticated users",
+        "Allows public routes",
+        "Refreshes session"
+      ]
     },
     {
       "id": "AUTH-003",
@@ -292,8 +433,14 @@
       "effort": "4h",
       "passes": true,
       "category": "auth",
-      "files": ["apps/web/src/app/signup/page.tsx"],
-      "acceptance": ["Email magic link works", "Google OAuth works", "Draft param preserved"]
+      "files": [
+        "apps/web/src/app/signup/page.tsx"
+      ],
+      "acceptance": [
+        "Email magic link works",
+        "Google OAuth works",
+        "Draft param preserved"
+      ]
     },
     {
       "id": "AUTH-004",
@@ -304,8 +451,14 @@
       "effort": "2h",
       "passes": true,
       "category": "auth",
-      "files": ["apps/web/src/app/login/page.tsx"],
-      "acceptance": ["Email magic link works", "Google OAuth works", "Redirect to /app"]
+      "files": [
+        "apps/web/src/app/login/page.tsx"
+      ],
+      "acceptance": [
+        "Email magic link works",
+        "Google OAuth works",
+        "Redirect to /app"
+      ]
     },
     {
       "id": "AUTH-005",
@@ -316,8 +469,14 @@
       "effort": "2h",
       "passes": true,
       "category": "auth",
-      "files": ["apps/web/src/app/auth/callback/route.ts"],
-      "acceptance": ["Exchanges code for session", "Claims pending draft", "Redirects correctly"]
+      "files": [
+        "apps/web/src/app/auth/callback/route.ts"
+      ],
+      "acceptance": [
+        "Exchanges code for session",
+        "Claims pending draft",
+        "Redirects correctly"
+      ]
     },
     {
       "id": "AUTH-006",
@@ -328,8 +487,13 @@
       "effort": "1h",
       "passes": true,
       "category": "auth",
-      "files": ["apps/web/src/app/api/auth/signout/route.ts"],
-      "acceptance": ["Clears session", "Redirects to landing"]
+      "files": [
+        "apps/web/src/app/api/auth/signout/route.ts"
+      ],
+      "acceptance": [
+        "Clears session",
+        "Redirects to landing"
+      ]
     },
     {
       "id": "AUTH-007",
@@ -340,8 +504,14 @@
       "effort": "2h",
       "passes": true,
       "category": "auth",
-      "files": ["apps/web/src/hooks/useAuth.ts"],
-      "acceptance": ["Returns user state", "Handles loading", "Subscribes to auth changes"]
+      "files": [
+        "apps/web/src/hooks/useAuth.ts"
+      ],
+      "acceptance": [
+        "Returns user state",
+        "Handles loading",
+        "Subscribes to auth changes"
+      ]
     },
     {
       "id": "AUTH-008",
@@ -352,8 +522,13 @@
       "effort": "1h",
       "passes": true,
       "category": "auth",
-      "files": ["apps/web/src/providers/AuthProvider.tsx"],
-      "acceptance": ["Provides auth context", "Wraps app"]
+      "files": [
+        "apps/web/src/providers/AuthProvider.tsx"
+      ],
+      "acceptance": [
+        "Provides auth context",
+        "Wraps app"
+      ]
     },
     {
       "id": "DRAFT-001",
@@ -364,8 +539,14 @@
       "effort": "3h",
       "passes": true,
       "category": "draft",
-      "files": ["apps/web/src/app/api/draft/route.ts"],
-      "acceptance": ["Creates draft in DB", "Sets session cookie", "Returns draftId"]
+      "files": [
+        "apps/web/src/app/api/draft/route.ts"
+      ],
+      "acceptance": [
+        "Creates draft in DB",
+        "Sets session cookie",
+        "Returns draftId"
+      ]
     },
     {
       "id": "DRAFT-002",
@@ -376,8 +557,13 @@
       "effort": "2h",
       "passes": true,
       "category": "draft",
-      "files": ["apps/web/src/app/api/draft/route.ts"],
-      "acceptance": ["Returns draft by session token", "Returns claimed draft by user_id"]
+      "files": [
+        "apps/web/src/app/api/draft/route.ts"
+      ],
+      "acceptance": [
+        "Returns draft by session token",
+        "Returns claimed draft by user_id"
+      ]
     },
     {
       "id": "DRAFT-003",
@@ -388,8 +574,14 @@
       "effort": "3h",
       "passes": true,
       "category": "draft",
-      "files": ["apps/web/src/components/prompt-input.tsx"],
-      "acceptance": ["Textarea with validation", "Saves draft on submit", "Redirects to signup"]
+      "files": [
+        "apps/web/src/components/prompt-input.tsx"
+      ],
+      "acceptance": [
+        "Textarea with validation",
+        "Saves draft on submit",
+        "Redirects to signup"
+      ]
     },
     {
       "id": "API-001",
@@ -400,8 +592,15 @@
       "effort": "3h",
       "passes": true,
       "category": "api",
-      "files": ["apps/api/src/index.ts", "apps/api/src/middleware/auth.ts"],
-      "acceptance": ["Server starts on port 8989", "Auth middleware works", "CORS configured"]
+      "files": [
+        "apps/api/src/index.ts",
+        "apps/api/src/middleware/auth.ts"
+      ],
+      "acceptance": [
+        "Server starts on port 8989",
+        "Auth middleware works",
+        "CORS configured"
+      ]
     },
     {
       "id": "API-002",
@@ -412,8 +611,14 @@
       "effort": "1h",
       "passes": true,
       "category": "api",
-      "files": ["apps/api/src/lib/redis.ts", "apps/api/src/lib/queue.ts"],
-      "acceptance": ["Redis connects", "BullMQ queue created"]
+      "files": [
+        "apps/api/src/lib/redis.ts",
+        "apps/api/src/lib/queue.ts"
+      ],
+      "acceptance": [
+        "Redis connects",
+        "BullMQ queue created"
+      ]
     },
     {
       "id": "API-003",
@@ -424,8 +629,15 @@
       "effort": "4h",
       "passes": true,
       "category": "api",
-      "files": ["apps/api/src/index.ts"],
-      "acceptance": ["Validates input", "Checks credits", "Creates project and job", "Queues job"]
+      "files": [
+        "apps/api/src/index.ts"
+      ],
+      "acceptance": [
+        "Validates input",
+        "Checks credits",
+        "Creates project and job",
+        "Queues job"
+      ]
     },
     {
       "id": "API-004",
@@ -436,8 +648,13 @@
       "effort": "2h",
       "passes": true,
       "category": "api",
-      "files": ["apps/api/src/index.ts"],
-      "acceptance": ["Returns project with job status", "Checks ownership"]
+      "files": [
+        "apps/api/src/index.ts"
+      ],
+      "acceptance": [
+        "Returns project with job status",
+        "Checks ownership"
+      ]
     },
     {
       "id": "API-005",
@@ -448,8 +665,13 @@
       "effort": "2h",
       "passes": true,
       "category": "api",
-      "files": ["apps/api/src/index.ts"],
-      "acceptance": ["Returns paginated projects", "Filters by user"]
+      "files": [
+        "apps/api/src/index.ts"
+      ],
+      "acceptance": [
+        "Returns paginated projects",
+        "Filters by user"
+      ]
     },
     {
       "id": "API-006",
@@ -460,8 +682,13 @@
       "effort": "2h",
       "passes": true,
       "category": "api",
-      "files": ["apps/api/src/index.ts"],
-      "acceptance": ["Returns job status and progress", "Returns step details"]
+      "files": [
+        "apps/api/src/index.ts"
+      ],
+      "acceptance": [
+        "Returns job status and progress",
+        "Returns step details"
+      ]
     },
     {
       "id": "API-007",
@@ -472,8 +699,12 @@
       "effort": "1h",
       "passes": true,
       "category": "api",
-      "files": ["apps/api/src/index.ts"],
-      "acceptance": ["Returns balance, reserved, available"]
+      "files": [
+        "apps/api/src/index.ts"
+      ],
+      "acceptance": [
+        "Returns balance, reserved, available"
+      ]
     },
     {
       "id": "API-008",
@@ -484,8 +715,13 @@
       "effort": "2h",
       "passes": true,
       "category": "api",
-      "files": ["apps/api/src/index.ts"],
-      "acceptance": ["Returns transaction history", "Paginated"]
+      "files": [
+        "apps/api/src/index.ts"
+      ],
+      "acceptance": [
+        "Returns transaction history",
+        "Paginated"
+      ]
     },
     {
       "id": "API-009",
@@ -496,8 +732,13 @@
       "effort": "3h",
       "passes": true,
       "category": "api",
-      "files": ["apps/api/src/index.ts"],
-      "acceptance": ["Creates Stripe checkout session", "Returns checkout URL"]
+      "files": [
+        "apps/api/src/index.ts"
+      ],
+      "acceptance": [
+        "Creates Stripe checkout session",
+        "Returns checkout URL"
+      ]
     },
     {
       "id": "API-010",
@@ -508,8 +749,13 @@
       "effort": "3h",
       "passes": true,
       "category": "api",
-      "files": ["apps/api/src/index.ts"],
-      "acceptance": ["Creates Stripe subscription checkout", "Returns checkout URL"]
+      "files": [
+        "apps/api/src/index.ts"
+      ],
+      "acceptance": [
+        "Creates Stripe subscription checkout",
+        "Returns checkout URL"
+      ]
     },
     {
       "id": "API-011",
@@ -520,8 +766,13 @@
       "effort": "2h",
       "passes": true,
       "category": "api",
-      "files": ["apps/api/src/index.ts"],
-      "acceptance": ["Cancels at period end", "Updates subscription record"]
+      "files": [
+        "apps/api/src/index.ts"
+      ],
+      "acceptance": [
+        "Cancels at period end",
+        "Updates subscription record"
+      ]
     },
     {
       "id": "API-012",
@@ -532,8 +783,14 @@
       "effort": "4h",
       "passes": true,
       "category": "api",
-      "files": ["apps/api/src/index.ts"],
-      "acceptance": ["Verifies Stripe signature", "Handles checkout.session.completed", "Handles invoice.paid"]
+      "files": [
+        "apps/api/src/index.ts"
+      ],
+      "acceptance": [
+        "Verifies Stripe signature",
+        "Handles checkout.session.completed",
+        "Handles invoice.paid"
+      ]
     },
     {
       "id": "API-013",
@@ -544,8 +801,13 @@
       "effort": "1h",
       "passes": true,
       "category": "api",
-      "files": ["apps/api/src/index.ts"],
-      "acceptance": ["Returns status", "Checks Redis and DB connections"]
+      "files": [
+        "apps/api/src/index.ts"
+      ],
+      "acceptance": [
+        "Returns status",
+        "Checks Redis and DB connections"
+      ]
     },
     {
       "id": "WORKER-001",
@@ -556,8 +818,14 @@
       "effort": "3h",
       "passes": true,
       "category": "worker",
-      "files": ["apps/worker/src/index.ts", "apps/worker/src/worker.ts"],
-      "acceptance": ["Connects to Redis", "Processes jobs from queue"]
+      "files": [
+        "apps/worker/src/index.ts",
+        "apps/worker/src/worker.ts"
+      ],
+      "acceptance": [
+        "Connects to Redis",
+        "Processes jobs from queue"
+      ]
     },
     {
       "id": "WORKER-002",
@@ -568,8 +836,14 @@
       "effort": "4h",
       "passes": true,
       "category": "worker",
-      "files": ["apps/worker/src/pipeline/runner.ts"],
-      "acceptance": ["Runs steps in order", "Updates job status", "Handles failures"]
+      "files": [
+        "apps/worker/src/pipeline/runner.ts"
+      ],
+      "acceptance": [
+        "Runs steps in order",
+        "Updates job status",
+        "Handles failures"
+      ]
     },
     {
       "id": "WORKER-003",
@@ -580,8 +854,14 @@
       "effort": "2h",
       "passes": true,
       "category": "worker",
-      "files": ["apps/worker/src/pipeline/types.ts", "apps/worker/src/pipeline/context.ts"],
-      "acceptance": ["Context passed between steps", "Artifacts accumulated"]
+      "files": [
+        "apps/worker/src/pipeline/types.ts",
+        "apps/worker/src/pipeline/context.ts"
+      ],
+      "acceptance": [
+        "Context passed between steps",
+        "Artifacts accumulated"
+      ]
     },
     {
       "id": "WORKER-004",
@@ -592,8 +872,13 @@
       "effort": "1h",
       "passes": true,
       "category": "worker",
-      "files": ["apps/worker/src/health.ts"],
-      "acceptance": ["Returns worker status", "Reports queue depth"]
+      "files": [
+        "apps/worker/src/health.ts"
+      ],
+      "acceptance": [
+        "Returns worker status",
+        "Reports queue depth"
+      ]
     },
     {
       "id": "PIPE-001",
@@ -604,8 +889,14 @@
       "effort": "6h",
       "passes": true,
       "category": "pipeline",
-      "files": ["apps/worker/src/pipeline/steps/generate-script.ts"],
-      "acceptance": ["Calls OpenAI API", "Returns structured script", "Handles niche presets"]
+      "files": [
+        "apps/worker/src/pipeline/steps/generate-script.ts"
+      ],
+      "acceptance": [
+        "Calls OpenAI API",
+        "Returns structured script",
+        "Handles niche presets"
+      ]
     },
     {
       "id": "PIPE-002",
@@ -616,8 +907,14 @@
       "effort": "4h",
       "passes": true,
       "category": "pipeline",
-      "files": ["apps/worker/src/pipeline/steps/generate-voice.ts"],
-      "acceptance": ["Calls OpenAI TTS API", "Saves MP3 file", "Returns duration"]
+      "files": [
+        "apps/worker/src/pipeline/steps/generate-voice.ts"
+      ],
+      "acceptance": [
+        "Calls OpenAI TTS API",
+        "Saves MP3 file",
+        "Returns duration"
+      ]
     },
     {
       "id": "PIPE-003",
@@ -628,8 +925,14 @@
       "effort": "4h",
       "passes": true,
       "category": "pipeline",
-      "files": ["apps/worker/src/pipeline/steps/run-alignment.ts"],
-      "acceptance": ["Calls Whisper API", "Returns word segments", "Generates SRT/VTT"]
+      "files": [
+        "apps/worker/src/pipeline/steps/run-alignment.ts"
+      ],
+      "acceptance": [
+        "Calls Whisper API",
+        "Returns word segments",
+        "Generates SRT/VTT"
+      ]
     },
     {
       "id": "PIPE-004",
@@ -640,8 +943,13 @@
       "effort": "3h",
       "passes": true,
       "category": "pipeline",
-      "files": ["apps/worker/src/pipeline/steps/plan-visuals.ts"],
-      "acceptance": ["Maps scenes to timestamps", "Generates image prompts"]
+      "files": [
+        "apps/worker/src/pipeline/steps/plan-visuals.ts"
+      ],
+      "acceptance": [
+        "Maps scenes to timestamps",
+        "Generates image prompts"
+      ]
     },
     {
       "id": "PIPE-005",
@@ -652,8 +960,14 @@
       "effort": "6h",
       "passes": true,
       "category": "pipeline",
-      "files": ["apps/worker/src/pipeline/steps/generate-images.ts"],
-      "acceptance": ["Calls Gemini API", "Saves images", "Handles rate limits"]
+      "files": [
+        "apps/worker/src/pipeline/steps/generate-images.ts"
+      ],
+      "acceptance": [
+        "Calls Gemini API",
+        "Saves images",
+        "Handles rate limits"
+      ]
     },
     {
       "id": "PIPE-006",
@@ -664,8 +978,13 @@
       "effort": "4h",
       "passes": true,
       "category": "pipeline",
-      "files": ["apps/worker/src/pipeline/steps/build-timeline.ts"],
-      "acceptance": ["Creates timeline JSON", "Maps images to segments"]
+      "files": [
+        "apps/worker/src/pipeline/steps/build-timeline.ts"
+      ],
+      "acceptance": [
+        "Creates timeline JSON",
+        "Maps images to segments"
+      ]
     },
     {
       "id": "PIPE-007",
@@ -676,8 +995,14 @@
       "effort": "8h",
       "passes": true,
       "category": "pipeline",
-      "files": ["apps/worker/src/pipeline/steps/render-video.ts"],
-      "acceptance": ["Calls Remotion render", "Outputs MP4", "Reports progress"]
+      "files": [
+        "apps/worker/src/pipeline/steps/render-video.ts"
+      ],
+      "acceptance": [
+        "Calls Remotion render",
+        "Outputs MP4",
+        "Reports progress"
+      ]
     },
     {
       "id": "PIPE-008",
@@ -688,8 +1013,14 @@
       "effort": "4h",
       "passes": true,
       "category": "pipeline",
-      "files": ["apps/worker/src/pipeline/steps/package-assets.ts"],
-      "acceptance": ["Uploads to storage", "Creates ZIP", "Records in assets table"]
+      "files": [
+        "apps/worker/src/pipeline/steps/package-assets.ts"
+      ],
+      "acceptance": [
+        "Uploads to storage",
+        "Creates ZIP",
+        "Records in assets table"
+      ]
     },
     {
       "id": "PIPE-009",
@@ -700,8 +1031,13 @@
       "effort": "2h",
       "passes": true,
       "category": "pipeline",
-      "files": ["apps/worker/src/pipeline/steps/notify-complete.ts"],
-      "acceptance": ["Finalizes credits", "Queues email notification"]
+      "files": [
+        "apps/worker/src/pipeline/steps/notify-complete.ts"
+      ],
+      "acceptance": [
+        "Finalizes credits",
+        "Queues email notification"
+      ]
     },
     {
       "id": "REMOTION-001",
@@ -712,8 +1048,14 @@
       "effort": "6h",
       "passes": true,
       "category": "remotion",
-      "files": ["packages/remotion/src/compositions/Main.tsx"],
-      "acceptance": ["Renders video with images", "Syncs audio", "Shows captions"]
+      "files": [
+        "packages/remotion/src/compositions/Main.tsx"
+      ],
+      "acceptance": [
+        "Renders video with images",
+        "Syncs audio",
+        "Shows captions"
+      ]
     },
     {
       "id": "REMOTION-002",
@@ -724,8 +1066,13 @@
       "effort": "4h",
       "passes": true,
       "category": "remotion",
-      "files": ["packages/remotion/src/components/Caption.tsx"],
-      "acceptance": ["Highlights current word", "Animates smoothly"]
+      "files": [
+        "packages/remotion/src/components/Caption.tsx"
+      ],
+      "acceptance": [
+        "Highlights current word",
+        "Animates smoothly"
+      ]
     },
     {
       "id": "REMOTION-003",
@@ -736,8 +1083,13 @@
       "effort": "3h",
       "passes": true,
       "category": "remotion",
-      "files": ["packages/remotion/src/components/Scene.tsx"],
-      "acceptance": ["Ken Burns effect", "Smooth transitions"]
+      "files": [
+        "packages/remotion/src/components/Scene.tsx"
+      ],
+      "acceptance": [
+        "Ken Burns effect",
+        "Smooth transitions"
+      ]
     },
     {
       "id": "REMOTION-004",
@@ -748,8 +1100,13 @@
       "effort": "2h",
       "passes": true,
       "category": "remotion",
-      "files": ["packages/remotion/src/render.ts"],
-      "acceptance": ["Called from worker", "Returns output path"]
+      "files": [
+        "packages/remotion/src/render.ts"
+      ],
+      "acceptance": [
+        "Called from worker",
+        "Returns output path"
+      ]
     },
     {
       "id": "UI-001",
@@ -760,8 +1117,15 @@
       "effort": "6h",
       "passes": true,
       "category": "frontend",
-      "files": ["apps/web/src/app/page.tsx"],
-      "acceptance": ["Hero section", "Prompt input", "Features grid", "CTA"]
+      "files": [
+        "apps/web/src/app/page.tsx"
+      ],
+      "acceptance": [
+        "Hero section",
+        "Prompt input",
+        "Features grid",
+        "CTA"
+      ]
     },
     {
       "id": "UI-002",
@@ -772,8 +1136,13 @@
       "effort": "4h",
       "passes": true,
       "category": "frontend",
-      "files": ["apps/web/src/app/pricing/page.tsx"],
-      "acceptance": ["Shows all pricing options", "Toggle between one-time and subscription"]
+      "files": [
+        "apps/web/src/app/pricing/page.tsx"
+      ],
+      "acceptance": [
+        "Shows all pricing options",
+        "Toggle between one-time and subscription"
+      ]
     },
     {
       "id": "UI-003",
@@ -784,8 +1153,14 @@
       "effort": "6h",
       "passes": true,
       "category": "frontend",
-      "files": ["apps/web/src/app/app/page.tsx"],
-      "acceptance": ["Lists projects", "Shows credit balance", "New project card"]
+      "files": [
+        "apps/web/src/app/app/page.tsx"
+      ],
+      "acceptance": [
+        "Lists projects",
+        "Shows credit balance",
+        "New project card"
+      ]
     },
     {
       "id": "UI-004",
@@ -796,8 +1171,15 @@
       "effort": "6h",
       "passes": true,
       "category": "frontend",
-      "files": ["apps/web/src/app/app/new/page.tsx"],
-      "acceptance": ["Form with prompt input", "Niche selector", "Duration picker", "Submits to API"]
+      "files": [
+        "apps/web/src/app/app/new/page.tsx"
+      ],
+      "acceptance": [
+        "Form with prompt input",
+        "Niche selector",
+        "Duration picker",
+        "Submits to API"
+      ]
     },
     {
       "id": "UI-005",
@@ -808,8 +1190,14 @@
       "effort": "6h",
       "passes": true,
       "category": "frontend",
-      "files": ["apps/web/src/app/app/jobs/[id]/page.tsx"],
-      "acceptance": ["Shows progress stepper", "Real-time updates", "Download section when ready"]
+      "files": [
+        "apps/web/src/app/app/jobs/[id]/page.tsx"
+      ],
+      "acceptance": [
+        "Shows progress stepper",
+        "Real-time updates",
+        "Download section when ready"
+      ]
     },
     {
       "id": "UI-006",
@@ -820,8 +1208,14 @@
       "effort": "4h",
       "passes": true,
       "category": "frontend",
-      "files": ["apps/web/src/app/app/credits/page.tsx"],
-      "acceptance": ["Shows balance", "Purchase options", "Transaction history"]
+      "files": [
+        "apps/web/src/app/app/credits/page.tsx"
+      ],
+      "acceptance": [
+        "Shows balance",
+        "Purchase options",
+        "Transaction history"
+      ]
     },
     {
       "id": "UI-007",
@@ -832,8 +1226,14 @@
       "effort": "3h",
       "passes": true,
       "category": "frontend",
-      "files": ["apps/web/src/app/app/settings/page.tsx"],
-      "acceptance": ["Profile settings", "Notification preferences", "Subscription management"]
+      "files": [
+        "apps/web/src/app/app/settings/page.tsx"
+      ],
+      "acceptance": [
+        "Profile settings",
+        "Notification preferences",
+        "Subscription management"
+      ]
     },
     {
       "id": "UI-008",
@@ -844,8 +1244,14 @@
       "effort": "3h",
       "passes": true,
       "category": "frontend",
-      "files": ["apps/web/src/app/app/layout.tsx"],
-      "acceptance": ["Sidebar navigation", "User menu", "Credit display"]
+      "files": [
+        "apps/web/src/app/app/layout.tsx"
+      ],
+      "acceptance": [
+        "Sidebar navigation",
+        "User menu",
+        "Credit display"
+      ]
     },
     {
       "id": "UI-009",
@@ -856,8 +1262,14 @@
       "effort": "4h",
       "passes": true,
       "category": "frontend",
-      "files": ["apps/web/src/components/job-stepper.tsx"],
-      "acceptance": ["Shows 9 steps", "Highlights current", "Shows progress %"]
+      "files": [
+        "apps/web/src/components/job-stepper.tsx"
+      ],
+      "acceptance": [
+        "Shows 9 steps",
+        "Highlights current",
+        "Shows progress %"
+      ]
     },
     {
       "id": "UI-010",
@@ -868,8 +1280,13 @@
       "effort": "2h",
       "passes": true,
       "category": "frontend",
-      "files": ["apps/web/src/components/credit-balance.tsx"],
-      "acceptance": ["Shows balance", "Link to purchase"]
+      "files": [
+        "apps/web/src/components/credit-balance.tsx"
+      ],
+      "acceptance": [
+        "Shows balance",
+        "Link to purchase"
+      ]
     },
     {
       "id": "UI-011",
@@ -880,8 +1297,14 @@
       "effort": "2h",
       "passes": true,
       "category": "frontend",
-      "files": ["apps/web/src/components/project-card.tsx"],
-      "acceptance": ["Shows project info", "Status badge", "Link to project"]
+      "files": [
+        "apps/web/src/components/project-card.tsx"
+      ],
+      "acceptance": [
+        "Shows project info",
+        "Status badge",
+        "Link to project"
+      ]
     },
     {
       "id": "UI-012",
@@ -892,8 +1315,13 @@
       "effort": "2h",
       "passes": true,
       "category": "frontend",
-      "files": ["apps/web/src/components/pricing-card.tsx"],
-      "acceptance": ["Shows price and features", "CTA button"]
+      "files": [
+        "apps/web/src/components/pricing-card.tsx"
+      ],
+      "acceptance": [
+        "Shows price and features",
+        "CTA button"
+      ]
     },
     {
       "id": "UI-013",
@@ -904,8 +1332,14 @@
       "effort": "3h",
       "passes": true,
       "category": "frontend",
-      "files": ["apps/web/src/components/video-player.tsx"],
-      "acceptance": ["Plays MP4", "Download button", "Fullscreen"]
+      "files": [
+        "apps/web/src/components/video-player.tsx"
+      ],
+      "acceptance": [
+        "Plays MP4",
+        "Download button",
+        "Fullscreen"
+      ]
     },
     {
       "id": "UI-014",
@@ -916,8 +1350,13 @@
       "effort": "2h",
       "passes": true,
       "category": "frontend",
-      "files": ["apps/web/src/hooks/useJobStatus.ts"],
-      "acceptance": ["Polls every 3s", "Stops on complete/failed"]
+      "files": [
+        "apps/web/src/hooks/useJobStatus.ts"
+      ],
+      "acceptance": [
+        "Polls every 3s",
+        "Stops on complete/failed"
+      ]
     },
     {
       "id": "UI-015",
@@ -928,8 +1367,13 @@
       "effort": "1h",
       "passes": true,
       "category": "frontend",
-      "files": ["apps/web/src/hooks/useCredits.ts"],
-      "acceptance": ["Fetches balance via RPC", "Handles loading state"]
+      "files": [
+        "apps/web/src/hooks/useCredits.ts"
+      ],
+      "acceptance": [
+        "Fetches balance via RPC",
+        "Handles loading state"
+      ]
     },
     {
       "id": "UI-016",
@@ -940,8 +1384,14 @@
       "effort": "2h",
       "passes": true,
       "category": "frontend",
-      "files": ["apps/web/tailwind.config.js"],
-      "acceptance": ["Custom colors", "Custom fonts", "Dark mode support"]
+      "files": [
+        "apps/web/tailwind.config.js"
+      ],
+      "acceptance": [
+        "Custom colors",
+        "Custom fonts",
+        "Dark mode support"
+      ]
     },
     {
       "id": "UI-017",
@@ -952,8 +1402,12 @@
       "effort": "2h",
       "passes": true,
       "category": "frontend",
-      "files": ["apps/web/src/components/ui/"],
-      "acceptance": ["Button, Input, Card, Dialog, etc. installed"]
+      "files": [
+        "apps/web/src/components/ui/"
+      ],
+      "acceptance": [
+        "Button, Input, Card, Dialog, etc. installed"
+      ]
     },
     {
       "id": "BILLING-001",
@@ -964,8 +1418,13 @@
       "effort": "1h",
       "passes": true,
       "category": "billing",
-      "files": ["apps/api/src/lib/stripe.ts"],
-      "acceptance": ["Client initialized", "Test mode working"]
+      "files": [
+        "apps/api/src/lib/stripe.ts"
+      ],
+      "acceptance": [
+        "Client initialized",
+        "Test mode working"
+      ]
     },
     {
       "id": "BILLING-002",
@@ -976,8 +1435,12 @@
       "effort": "2h",
       "passes": true,
       "category": "billing",
-      "files": ["apps/api/src/lib/stripe-products.ts"],
-      "acceptance": ["Starter, Creator, Pro packs configured"]
+      "files": [
+        "apps/api/src/lib/stripe-products.ts"
+      ],
+      "acceptance": [
+        "Starter, Creator, Pro packs configured"
+      ]
     },
     {
       "id": "BILLING-003",
@@ -988,8 +1451,12 @@
       "effort": "2h",
       "passes": true,
       "category": "billing",
-      "files": ["apps/api/src/lib/stripe-products.ts"],
-      "acceptance": ["Hobbyist, Creator, Business plans configured"]
+      "files": [
+        "apps/api/src/lib/stripe-products.ts"
+      ],
+      "acceptance": [
+        "Hobbyist, Creator, Business plans configured"
+      ]
     },
     {
       "id": "BILLING-004",
@@ -1000,8 +1467,13 @@
       "effort": "3h",
       "passes": true,
       "category": "billing",
-      "files": ["apps/api/src/webhooks/stripe.ts"],
-      "acceptance": ["Credits added on payment", "Idempotent"]
+      "files": [
+        "apps/api/src/webhooks/stripe.ts"
+      ],
+      "acceptance": [
+        "Credits added on payment",
+        "Idempotent"
+      ]
     },
     {
       "id": "BILLING-005",
@@ -1012,8 +1484,13 @@
       "effort": "2h",
       "passes": true,
       "category": "billing",
-      "files": ["apps/api/src/webhooks/stripe.ts"],
-      "acceptance": ["Monthly credits added", "Subscription updated"]
+      "files": [
+        "apps/api/src/webhooks/stripe.ts"
+      ],
+      "acceptance": [
+        "Monthly credits added",
+        "Subscription updated"
+      ]
     },
     {
       "id": "BILLING-006",
@@ -1024,8 +1501,13 @@
       "effort": "2h",
       "passes": true,
       "category": "billing",
-      "files": ["apps/api/src/webhooks/stripe.ts"],
-      "acceptance": ["Status changes tracked", "Plan changes handled"]
+      "files": [
+        "apps/api/src/webhooks/stripe.ts"
+      ],
+      "acceptance": [
+        "Status changes tracked",
+        "Plan changes handled"
+      ]
     },
     {
       "id": "EMAIL-001",
@@ -1036,8 +1518,13 @@
       "effort": "2h",
       "passes": true,
       "category": "email",
-      "files": ["apps/worker/src/queues/email.ts"],
-      "acceptance": ["Queue created", "Worker processes emails"]
+      "files": [
+        "apps/worker/src/queues/email.ts"
+      ],
+      "acceptance": [
+        "Queue created",
+        "Worker processes emails"
+      ]
     },
     {
       "id": "EMAIL-002",
@@ -1048,8 +1535,13 @@
       "effort": "1h",
       "passes": true,
       "category": "email",
-      "files": ["apps/worker/src/lib/resend.ts"],
-      "acceptance": ["Client initialized", "Test email works"]
+      "files": [
+        "apps/worker/src/lib/resend.ts"
+      ],
+      "acceptance": [
+        "Client initialized",
+        "Test email works"
+      ]
     },
     {
       "id": "EMAIL-003",
@@ -1060,8 +1552,13 @@
       "effort": "2h",
       "passes": true,
       "category": "email",
-      "files": ["apps/worker/src/templates/welcome.tsx"],
-      "acceptance": ["React email template", "Shows trial credits"]
+      "files": [
+        "apps/worker/src/templates/welcome.tsx"
+      ],
+      "acceptance": [
+        "React email template",
+        "Shows trial credits"
+      ]
     },
     {
       "id": "EMAIL-004",
@@ -1072,8 +1569,13 @@
       "effort": "2h",
       "passes": true,
       "category": "email",
-      "files": ["apps/worker/src/templates/job-complete.tsx"],
-      "acceptance": ["Shows project title", "Download link"]
+      "files": [
+        "apps/worker/src/templates/job-complete.tsx"
+      ],
+      "acceptance": [
+        "Shows project title",
+        "Download link"
+      ]
     },
     {
       "id": "EMAIL-005",
@@ -1084,8 +1586,13 @@
       "effort": "2h",
       "passes": true,
       "category": "email",
-      "files": ["apps/worker/src/templates/job-failed.tsx"],
-      "acceptance": ["Shows error info", "Credits refunded message"]
+      "files": [
+        "apps/worker/src/templates/job-failed.tsx"
+      ],
+      "acceptance": [
+        "Shows error info",
+        "Credits refunded message"
+      ]
     },
     {
       "id": "EMAIL-006",
@@ -1096,8 +1603,13 @@
       "effort": "2h",
       "passes": true,
       "category": "email",
-      "files": ["apps/worker/src/templates/purchase-confirmation.tsx"],
-      "acceptance": ["Shows credits added", "Receipt info"]
+      "files": [
+        "apps/worker/src/templates/purchase-confirmation.tsx"
+      ],
+      "acceptance": [
+        "Shows credits added",
+        "Receipt info"
+      ]
     },
     {
       "id": "EMAIL-007",
@@ -1108,8 +1620,13 @@
       "effort": "2h",
       "passes": true,
       "category": "email",
-      "files": ["apps/worker/src/notify.ts"],
-      "acceptance": ["Queues emails by type", "Handles user lookup"]
+      "files": [
+        "apps/worker/src/notify.ts"
+      ],
+      "acceptance": [
+        "Queues emails by type",
+        "Handles user lookup"
+      ]
     },
     {
       "id": "STORAGE-001",
@@ -1120,8 +1637,14 @@
       "effort": "2h",
       "passes": true,
       "category": "storage",
-      "files": ["supabase/config.toml"],
-      "acceptance": ["generated-assets bucket", "temp-processing bucket", "RLS policies"]
+      "files": [
+        "supabase/config.toml"
+      ],
+      "acceptance": [
+        "generated-assets bucket",
+        "temp-processing bucket",
+        "RLS policies"
+      ]
     },
     {
       "id": "STORAGE-002",
@@ -1132,8 +1655,13 @@
       "effort": "3h",
       "passes": true,
       "category": "storage",
-      "files": ["apps/worker/src/lib/storage.ts"],
-      "acceptance": ["Uploads files", "Returns public URLs"]
+      "files": [
+        "apps/worker/src/lib/storage.ts"
+      ],
+      "acceptance": [
+        "Uploads files",
+        "Returns public URLs"
+      ]
     },
     {
       "id": "STORAGE-003",
@@ -1144,8 +1672,13 @@
       "effort": "2h",
       "passes": true,
       "category": "storage",
-      "files": ["apps/worker/src/jobs/cleanup.ts"],
-      "acceptance": ["Deletes old temp files", "Runs on schedule"]
+      "files": [
+        "apps/worker/src/jobs/cleanup.ts"
+      ],
+      "acceptance": [
+        "Deletes old temp files",
+        "Runs on schedule"
+      ]
     },
     {
       "id": "TEST-001",
@@ -1156,8 +1689,14 @@
       "effort": "2h",
       "passes": true,
       "category": "testing",
-      "files": ["jest.config.js", "packages/shared/__tests__/"],
-      "acceptance": ["Jest runs", "Coverage reporting"]
+      "files": [
+        "jest.config.js",
+        "packages/shared/__tests__/"
+      ],
+      "acceptance": [
+        "Jest runs",
+        "Coverage reporting"
+      ]
     },
     {
       "id": "TEST-002",
@@ -1168,8 +1707,14 @@
       "effort": "2h",
       "passes": true,
       "category": "testing",
-      "files": ["playwright.config.ts", "e2e/"],
-      "acceptance": ["Playwright runs", "CI integration"]
+      "files": [
+        "playwright.config.ts",
+        "e2e/"
+      ],
+      "acceptance": [
+        "Playwright runs",
+        "CI integration"
+      ]
     },
     {
       "id": "TEST-003",
@@ -1180,8 +1725,13 @@
       "effort": "2h",
       "passes": true,
       "category": "testing",
-      "files": ["packages/shared/__tests__/schemas.test.ts"],
-      "acceptance": ["All schemas tested", "Edge cases covered"]
+      "files": [
+        "packages/shared/__tests__/schemas.test.ts"
+      ],
+      "acceptance": [
+        "All schemas tested",
+        "Edge cases covered"
+      ]
     },
     {
       "id": "TEST-004",
@@ -1192,8 +1742,12 @@
       "effort": "3h",
       "passes": true,
       "category": "testing",
-      "files": ["__tests__/integration/credits.test.ts"],
-      "acceptance": ["Reserve, finalize, release tested"]
+      "files": [
+        "__tests__/integration/credits.test.ts"
+      ],
+      "acceptance": [
+        "Reserve, finalize, release tested"
+      ]
     },
     {
       "id": "TEST-005",
@@ -1204,8 +1758,13 @@
       "effort": "4h",
       "passes": true,
       "category": "testing",
-      "files": ["apps/api/__tests__/"],
-      "acceptance": ["All endpoints tested", "Auth tested"]
+      "files": [
+        "apps/api/__tests__/"
+      ],
+      "acceptance": [
+        "All endpoints tested",
+        "Auth tested"
+      ]
     },
     {
       "id": "TEST-006",
@@ -1216,8 +1775,13 @@
       "effort": "4h",
       "passes": true,
       "category": "testing",
-      "files": ["apps/worker/__tests__/pipeline/"],
-      "acceptance": ["Each step tested", "External APIs mocked"]
+      "files": [
+        "apps/worker/__tests__/pipeline/"
+      ],
+      "acceptance": [
+        "Each step tested",
+        "External APIs mocked"
+      ]
     },
     {
       "id": "TEST-007",
@@ -1228,8 +1792,14 @@
       "effort": "3h",
       "passes": true,
       "category": "testing",
-      "files": ["e2e/auth.spec.ts"],
-      "acceptance": ["Signup works", "Login works", "Draft claim works"]
+      "files": [
+        "e2e/auth.spec.ts"
+      ],
+      "acceptance": [
+        "Signup works",
+        "Login works",
+        "Draft claim works"
+      ]
     },
     {
       "id": "TEST-008",
@@ -1240,8 +1810,13 @@
       "effort": "3h",
       "passes": true,
       "category": "testing",
-      "files": ["e2e/projects.spec.ts"],
-      "acceptance": ["Can create project", "Shows in dashboard"]
+      "files": [
+        "e2e/projects.spec.ts"
+      ],
+      "acceptance": [
+        "Can create project",
+        "Shows in dashboard"
+      ]
     },
     {
       "id": "TEST-009",
@@ -1252,8 +1827,13 @@
       "effort": "3h",
       "passes": true,
       "category": "testing",
-      "files": ["e2e/credits.spec.ts"],
-      "acceptance": ["Checkout redirect works", "Webhook simulated"]
+      "files": [
+        "e2e/credits.spec.ts"
+      ],
+      "acceptance": [
+        "Checkout redirect works",
+        "Webhook simulated"
+      ]
     },
     {
       "id": "MONITOR-001",
@@ -1264,8 +1844,13 @@
       "effort": "3h",
       "passes": true,
       "category": "monitoring",
-      "files": ["packages/shared/src/lib/logger.ts"],
-      "acceptance": ["JSON logs with trace IDs", "Log levels"]
+      "files": [
+        "packages/shared/src/lib/logger.ts"
+      ],
+      "acceptance": [
+        "JSON logs with trace IDs",
+        "Log levels"
+      ]
     },
     {
       "id": "MONITOR-002",
@@ -1276,8 +1861,14 @@
       "effort": "3h",
       "passes": true,
       "category": "monitoring",
-      "files": ["apps/web/src/lib/sentry.ts", "apps/api/src/lib/sentry.ts"],
-      "acceptance": ["Errors captured", "Stack traces available"]
+      "files": [
+        "apps/web/src/lib/sentry.ts",
+        "apps/api/src/lib/sentry.ts"
+      ],
+      "acceptance": [
+        "Errors captured",
+        "Stack traces available"
+      ]
     },
     {
       "id": "MONITOR-003",
@@ -1288,8 +1879,13 @@
       "effort": "2h",
       "passes": true,
       "category": "monitoring",
-      "files": ["apps/api/src/bull-board.ts"],
-      "acceptance": ["Dashboard accessible", "Shows queue stats"]
+      "files": [
+        "apps/api/src/bull-board.ts"
+      ],
+      "acceptance": [
+        "Dashboard accessible",
+        "Shows queue stats"
+      ]
     },
     {
       "id": "DEPLOY-001",
@@ -1300,8 +1896,15 @@
       "effort": "4h",
       "passes": true,
       "category": "deployment",
-      "files": ["apps/web/Dockerfile", "apps/api/Dockerfile", "apps/worker/Dockerfile"],
-      "acceptance": ["All apps containerized", "docker-compose works"]
+      "files": [
+        "apps/web/Dockerfile",
+        "apps/api/Dockerfile",
+        "apps/worker/Dockerfile"
+      ],
+      "acceptance": [
+        "All apps containerized",
+        "docker-compose works"
+      ]
     },
     {
       "id": "DEPLOY-002",
@@ -1312,8 +1915,14 @@
       "effort": "4h",
       "passes": true,
       "category": "deployment",
-      "files": [".github/workflows/ci.yml", ".github/workflows/deploy.yml"],
-      "acceptance": ["Tests run on PR", "Auto-deploy on merge"]
+      "files": [
+        ".github/workflows/ci.yml",
+        ".github/workflows/deploy.yml"
+      ],
+      "acceptance": [
+        "Tests run on PR",
+        "Auto-deploy on merge"
+      ]
     },
     {
       "id": "DEPLOY-003",
@@ -1324,8 +1933,719 @@
       "effort": "2h",
       "passes": true,
       "category": "deployment",
-      "files": ["docs/ENVIRONMENT.md"],
-      "acceptance": ["All vars documented", "Setup instructions"]
+      "files": [
+        "docs/ENVIRONMENT.md"
+      ],
+      "acceptance": [
+        "All vars documented",
+        "Setup instructions"
+      ]
+    },
+    {
+      "id": "RESIL-001",
+      "name": "Partial Asset Recovery",
+      "description": "Allow users to retry from last checkpoint if image gen succeeds but rendering fails",
+      "priority": "P1",
+      "phase": 13,
+      "effort": "4h",
+      "passes": true,
+      "category": "resilience",
+      "files": [
+        "apps/worker/src/pipeline/recovery.ts",
+        "apps/web/src/app/projects/[id]/retry/page.tsx"
+      ],
+      "acceptance": [
+        "Checkpoint state saved",
+        "Retry from checkpoint works",
+        "UI shows retry options"
+      ]
+    },
+    {
+      "id": "RESIL-002",
+      "name": "Credit Refund Policy",
+      "description": "Automatic refunds for jobs that fail before completion threshold",
+      "priority": "P1",
+      "phase": 13,
+      "effort": "3h",
+      "passes": true,
+      "category": "resilience",
+      "files": [
+        "apps/api/src/services/refund.ts",
+        "packages/shared/src/constants.ts"
+      ],
+      "acceptance": [
+        "Refund threshold configurable",
+        "Credits restored on early failure",
+        "Ledger entry created"
+      ]
+    },
+    {
+      "id": "RESIL-003",
+      "name": "Dead Letter Queue",
+      "description": "Jobs that fail 3+ times get flagged for manual review",
+      "priority": "P1",
+      "phase": 13,
+      "effort": "3h",
+      "passes": true,
+      "category": "resilience",
+      "files": [
+        "apps/worker/src/queues/dead-letter.ts",
+        "apps/api/src/routes/admin/dlq.ts"
+      ],
+      "acceptance": [
+        "Failed jobs moved to DLQ",
+        "Admin can view DLQ",
+        "Retry from DLQ works"
+      ]
+    },
+    {
+      "id": "RESIL-004",
+      "name": "User Self-Service Retry",
+      "description": "UI to retry individual pipeline steps",
+      "priority": "P2",
+      "phase": 13,
+      "effort": "4h",
+      "passes": true,
+      "category": "resilience",
+      "files": [
+        "apps/web/src/components/RetryStepButton.tsx",
+        "apps/api/src/services/retry-step.ts",
+        "apps/worker/src/pipeline/runner.ts"
+      ],
+      "acceptance": [
+        "Retry button per step",
+        "Step re-executes",
+        "Progress updates"
+      ]
+    },
+    {
+      "id": "MOD-001",
+      "name": "Prompt Content Filter",
+      "description": "Filter prompts for prohibited content before job creation using OpenAI moderation",
+      "priority": "P0",
+      "phase": 14,
+      "effort": "3h",
+      "passes": true,
+      "category": "moderation",
+      "files": [
+        "packages/shared/src/moderation.ts",
+        "apps/api/src/middleware/moderation.ts"
+      ],
+      "acceptance": [
+        "Moderation API called",
+        "Blocked prompts rejected",
+        "Clear error message"
+      ]
+    },
+    {
+      "id": "MOD-002",
+      "name": "Output Content Scanning",
+      "description": "Check generated scripts and images for policy violations",
+      "priority": "P1",
+      "phase": 14,
+      "effort": "4h",
+      "passes": true,
+      "category": "moderation",
+      "files": [
+        "apps/worker/src/pipeline/steps/moderate-output.ts"
+      ],
+      "acceptance": [
+        "Scripts scanned",
+        "Images checked",
+        "Violations flagged"
+      ]
+    },
+    {
+      "id": "MOD-003",
+      "name": "Audit Trail",
+      "description": "Store original prompts for compliance review",
+      "priority": "P1",
+      "phase": 14,
+      "effort": "2h",
+      "passes": true,
+      "category": "moderation",
+      "files": [
+        "supabase/migrations/audit_log.sql"
+      ],
+      "acceptance": [
+        "Prompts logged",
+        "Immutable audit table",
+        "Searchable by admin"
+      ]
+    },
+    {
+      "id": "MOD-004",
+      "name": "Appeal Process",
+      "description": "User path to contest blocked content",
+      "priority": "P2",
+      "phase": 14,
+      "effort": "4h",
+      "passes": true,
+      "category": "moderation",
+      "files": [
+        "apps/web/src/app/appeal/page.tsx",
+        "apps/api/src/routes/appeals.ts"
+      ],
+      "acceptance": [
+        "Appeal form works",
+        "Admin review queue",
+        "User notified of decision"
+      ]
+    },
+    {
+      "id": "ANALYTICS-001",
+      "name": "PostHog Integration",
+      "description": "Initialize PostHog client for event tracking",
+      "priority": "P1",
+      "phase": 15,
+      "effort": "2h",
+      "passes": true,
+      "category": "analytics",
+      "files": [
+        "apps/web/src/lib/analytics.ts",
+        "apps/web/src/app/layout.tsx"
+      ],
+      "acceptance": [
+        "PostHog initialized",
+        "Page views tracked",
+        "User identified"
+      ]
+    },
+    {
+      "id": "ANALYTICS-002",
+      "name": "Funnel Metrics",
+      "description": "Track landing → signup → first_video → paid_conversion funnel",
+      "priority": "P1",
+      "phase": 15,
+      "effort": "3h",
+      "passes": true,
+      "category": "analytics",
+      "files": [
+        "apps/web/src/lib/analytics.ts"
+      ],
+      "acceptance": [
+        "All funnel events tracked",
+        "Conversion visible in PostHog"
+      ]
+    },
+    {
+      "id": "ANALYTICS-003",
+      "name": "Pipeline Health Metrics",
+      "description": "Track success rates per step, avg duration, failure reasons",
+      "priority": "P1",
+      "phase": 15,
+      "effort": "3h",
+      "passes": true,
+      "category": "analytics",
+      "files": [
+        "apps/worker/src/pipeline/metrics.ts"
+      ],
+      "acceptance": [
+        "Step durations tracked",
+        "Failure reasons categorized",
+        "Dashboard available"
+      ]
+    },
+    {
+      "id": "ANALYTICS-004",
+      "name": "Cost Tracking",
+      "description": "Track API costs per job (OpenAI, image gen, storage)",
+      "priority": "P1",
+      "phase": 15,
+      "effort": "4h",
+      "passes": true,
+      "category": "analytics",
+      "files": [
+        "apps/worker/src/services/cost-tracker.ts",
+        "supabase/migrations/job_costs.sql"
+      ],
+      "acceptance": [
+        "Costs calculated per job",
+        "Stored in database",
+        "Visible in admin"
+      ]
+    },
+    {
+      "id": "ADMIN-001",
+      "name": "Admin Dashboard Layout",
+      "description": "Create admin area with navigation and auth check",
+      "priority": "P2",
+      "phase": 16,
+      "effort": "3h",
+      "passes": true,
+      "category": "admin",
+      "files": [
+        "apps/web/src/app/admin/layout.tsx",
+        "apps/web/src/middleware.ts"
+      ],
+      "acceptance": [
+        "Admin route protected",
+        "Navigation works",
+        "Role check enforced"
+      ]
+    },
+    {
+      "id": "ADMIN-002",
+      "name": "Job Inspector",
+      "description": "View any job's pipeline state, logs, artifacts",
+      "priority": "P2",
+      "phase": 16,
+      "effort": "4h",
+      "passes": true,
+      "category": "admin",
+      "files": [
+        "apps/web/src/app/admin/jobs/[id]/page.tsx"
+      ],
+      "acceptance": [
+        "Job details visible",
+        "Step logs shown",
+        "Artifacts downloadable"
+      ]
+    },
+    {
+      "id": "ADMIN-003",
+      "name": "User Management",
+      "description": "Credit adjustments and account status management",
+      "priority": "P2",
+      "phase": 16,
+      "effort": "4h",
+      "passes": true,
+      "category": "admin",
+      "files": [
+        "apps/web/src/app/admin/users/page.tsx",
+        "apps/api/src/routes/admin/users.ts"
+      ],
+      "acceptance": [
+        "User list with search",
+        "Credit adjustment works",
+        "Account status toggle"
+      ]
+    },
+    {
+      "id": "ADMIN-004",
+      "name": "Queue Health Dashboard",
+      "description": "Worker status, pending jobs, stuck jobs overview",
+      "priority": "P2",
+      "phase": 16,
+      "effort": "3h",
+      "passes": true,
+      "category": "admin",
+      "files": [
+        "apps/web/src/app/admin/queues/page.tsx"
+      ],
+      "acceptance": [
+        "Queue stats visible",
+        "Stuck jobs highlighted",
+        "Retry actions available"
+      ]
+    },
+    {
+      "id": "ADMIN-005",
+      "name": "Cost Dashboard",
+      "description": "Daily/weekly API spend by service",
+      "priority": "P2",
+      "phase": 16,
+      "effort": "3h",
+      "passes": true,
+      "category": "admin",
+      "files": [
+        "apps/web/src/app/admin/costs/page.tsx"
+      ],
+      "acceptance": [
+        "Cost charts rendered",
+        "Breakdown by service",
+        "Date range filter"
+      ]
+    },
+    {
+      "id": "DOC-001",
+      "name": "PDF Extraction",
+      "description": "Extract text from uploaded PDF files using pdf-parse",
+      "priority": "P1",
+      "phase": 17,
+      "effort": "3h",
+      "passes": true,
+      "category": "documents",
+      "files": [
+        "apps/worker/src/pipeline/steps/ingest-inputs.ts",
+        "package.json"
+      ],
+      "acceptance": [
+        "PDF text extracted",
+        "Formatting preserved",
+        "Error handling"
+      ]
+    },
+    {
+      "id": "DOC-002",
+      "name": "DOCX Support",
+      "description": "Extract text from Word documents using mammoth.js",
+      "priority": "P1",
+      "phase": 17,
+      "effort": "3h",
+      "passes": true,
+      "category": "documents",
+      "files": [
+        "apps/worker/src/pipeline/steps/ingest-inputs.ts"
+      ],
+      "acceptance": [
+        "DOCX text extracted",
+        "Styles handled",
+        "Tables converted"
+      ]
+    },
+    {
+      "id": "DOC-003",
+      "name": "Audio Transcription",
+      "description": "Transcribe voice notes using Whisper API",
+      "priority": "P2",
+      "phase": 17,
+      "effort": "4h",
+      "passes": true,
+      "category": "documents",
+      "files": [
+        "apps/worker/src/services/transcription.ts"
+      ],
+      "acceptance": [
+        "Audio transcribed",
+        "Timestamps available",
+        "Speaker detection"
+      ]
+    },
+    {
+      "id": "DOC-004",
+      "name": "URL Content Scraping",
+      "description": "Extract content from blog post URLs",
+      "priority": "P2",
+      "phase": 17,
+      "effort": "3h",
+      "passes": true,
+      "category": "documents",
+      "files": [
+        "apps/worker/src/services/url-scraper.ts"
+      ],
+      "acceptance": [
+        "Article content extracted",
+        "Metadata parsed",
+        "Images referenced"
+      ]
+    },
+    {
+      "id": "DOC-005",
+      "name": "File Size Limits",
+      "description": "Enforce max 10MB per file, 50MB total per project",
+      "priority": "P1",
+      "phase": 17,
+      "effort": "2h",
+      "passes": true,
+      "category": "documents",
+      "files": [
+        "apps/api/src/middleware/upload-limits.ts"
+      ],
+      "acceptance": [
+        "Size validation works",
+        "Clear error messages",
+        "Configurable limits"
+      ]
+    },
+    {
+      "id": "REMOTION-005",
+      "name": "Template Variants",
+      "description": "Multiple visual styles per niche preset",
+      "priority": "P2",
+      "phase": 18,
+      "effort": "6h",
+      "passes": true,
+      "category": "remotion",
+      "files": [
+        "packages/remotion/src/templates/"
+      ],
+      "acceptance": [
+        "3+ templates per niche",
+        "Template selector UI",
+        "Preview thumbnails"
+      ]
+    },
+    {
+      "id": "REMOTION-006",
+      "name": "Preview Generation",
+      "description": "Quick thumbnail/preview before full render",
+      "priority": "P2",
+      "phase": 18,
+      "effort": "3h",
+      "passes": true,
+      "category": "remotion",
+      "files": [
+        "apps/worker/src/pipeline/steps/generate-preview.ts"
+      ],
+      "acceptance": [
+        "Preview in <10s",
+        "Thumbnail saved",
+        "Shown in UI"
+      ]
+    },
+    {
+      "id": "RATE-001",
+      "name": "Upstash Rate Limiter",
+      "description": "Initialize Upstash Redis rate limiting",
+      "priority": "P0",
+      "phase": 19,
+      "effort": "2h",
+      "passes": true,
+      "category": "rate-limiting",
+      "files": [
+        "apps/api/src/lib/ratelimit.ts",
+        "package.json"
+      ],
+      "acceptance": [
+        "Upstash connected",
+        "Rate limit works",
+        "429 returned"
+      ]
+    },
+    {
+      "id": "RATE-002",
+      "name": "Draft Endpoint Rate Limit",
+      "description": "Rate limit /api/draft to prevent spam",
+      "priority": "P0",
+      "phase": 19,
+      "effort": "1h",
+      "passes": true,
+      "category": "rate-limiting",
+      "files": [
+        "apps/web/src/app/api/draft/route.ts"
+      ],
+      "acceptance": [
+        "10 req/min per IP",
+        "Clear error message",
+        "Bypass for auth users"
+      ]
+    },
+    {
+      "id": "RATE-003",
+      "name": "Job Creation Rate Limit",
+      "description": "Per-user limits on job creation",
+      "priority": "P1",
+      "phase": 19,
+      "effort": "2h",
+      "passes": true,
+      "category": "rate-limiting",
+      "files": [
+        "apps/api/src/routes/jobs.ts"
+      ],
+      "acceptance": [
+        "User-based limits",
+        "Configurable per plan",
+        "Clear feedback"
+      ]
+    },
+    {
+      "id": "RATE-004",
+      "name": "API Key Rate Limits",
+      "description": "Rate limiting for API key access",
+      "priority": "P2",
+      "phase": 19,
+      "effort": "3h",
+      "passes": true,
+      "category": "rate-limiting",
+      "files": [
+        "apps/api/src/middleware/api-key-limit.ts",
+        "apps/api/src/routes/api-keys.ts",
+        "supabase/migrations/20260120000020_api_keys.sql",
+        "supabase/migrations/20260120000021_api_key_usage_notifications.sql",
+        "packages/shared/src/schemas/api-key.ts",
+        "packages/shared/src/types.ts"
+      ],
+      "acceptance": [
+        "Per-key limits",
+        "Usage tracking",
+        "Webhook notifications"
+      ]
+    },
+    {
+      "id": "GDPR-001",
+      "name": "Asset Retention Policy",
+      "description": "Auto-delete job assets after configurable days",
+      "priority": "P1",
+      "phase": 20,
+      "effort": "4h",
+      "passes": true,
+      "category": "gdpr",
+      "files": [
+        "apps/worker/src/jobs/cleanup-assets.ts",
+        "supabase/migrations/retention.sql"
+      ],
+      "acceptance": [
+        "Cron job runs",
+        "Old assets deleted",
+        "User notified before deletion"
+      ]
+    },
+    {
+      "id": "GDPR-002",
+      "name": "Account Deletion",
+      "description": "User can request full data deletion",
+      "priority": "P1",
+      "phase": 20,
+      "effort": "4h",
+      "passes": true,
+      "category": "gdpr",
+      "files": [
+        "apps/web/src/app/settings/delete-account/page.tsx",
+        "apps/api/src/routes/account/delete.ts"
+      ],
+      "acceptance": [
+        "Deletion request flow",
+        "All data removed",
+        "Confirmation email"
+      ]
+    },
+    {
+      "id": "GDPR-003",
+      "name": "Data Export",
+      "description": "User can download all their data",
+      "priority": "P1",
+      "phase": 20,
+      "effort": "4h",
+      "passes": true,
+      "category": "gdpr",
+      "files": [
+        "apps/api/src/routes/account/export.ts"
+      ],
+      "acceptance": [
+        "Export includes all data",
+        "ZIP download",
+        "JSON format"
+      ]
+    },
+    {
+      "id": "GDPR-004",
+      "name": "Cookie Consent",
+      "description": "GDPR-compliant consent banner",
+      "priority": "P1",
+      "phase": 20,
+      "effort": "3h",
+      "passes": true,
+      "category": "gdpr",
+      "files": [
+        "apps/web/src/components/CookieConsent.tsx"
+      ],
+      "acceptance": [
+        "Banner shown",
+        "Preferences saved",
+        "Analytics respects choice"
+      ]
+    },
+    {
+      "id": "GDPR-005",
+      "name": "Privacy Policy Page",
+      "description": "Document data handling practices",
+      "priority": "P1",
+      "phase": 20,
+      "effort": "2h",
+      "passes": true,
+      "category": "gdpr",
+      "files": [
+        "apps/web/src/app/privacy/page.tsx"
+      ],
+      "acceptance": [
+        "Policy comprehensive",
+        "Last updated date",
+        "Contact info"
+      ]
+    },
+    {
+      "id": "A11Y-001",
+      "name": "WCAG Compliance Audit",
+      "description": "Document and fix WCAG 2.1 AA violations",
+      "priority": "P2",
+      "phase": 21,
+      "effort": "4h",
+      "passes": true,
+      "category": "accessibility",
+      "files": [
+        "docs/ACCESSIBILITY.md"
+      ],
+      "acceptance": [
+        "Audit completed",
+        "Issues documented",
+        "Fix plan created"
+      ]
+    },
+    {
+      "id": "A11Y-002",
+      "name": "Keyboard Navigation",
+      "description": "Full keyboard navigation for all flows",
+      "priority": "P2",
+      "phase": 21,
+      "effort": "4h",
+      "passes": true,
+      "category": "accessibility",
+      "files": [
+        "apps/web/src/components/"
+      ],
+      "acceptance": [
+        "Tab order correct",
+        "Focus visible",
+        "Skip links work"
+      ]
+    },
+    {
+      "id": "A11Y-003",
+      "name": "Screen Reader Testing",
+      "description": "Test and fix screen reader compatibility",
+      "priority": "P2",
+      "phase": 21,
+      "effort": "4h",
+      "passes": true,
+      "category": "accessibility",
+      "files": [
+        "apps/web/src/components/"
+      ],
+      "acceptance": [
+        "ARIA labels correct",
+        "Announcements work",
+        "Forms accessible"
+      ]
+    },
+    {
+      "id": "A11Y-004",
+      "name": "Color Contrast",
+      "description": "Ensure all text meets contrast requirements",
+      "priority": "P2",
+      "phase": 21,
+      "effort": "2h",
+      "passes": true,
+      "category": "accessibility",
+      "files": [
+        "apps/web/src/app/globals.css",
+        "__tests__/accessibility/color-contrast.test.ts",
+        "packages/shared/src/accessibility/contrast.ts",
+        "docs/ACCESSIBILITY.md"
+      ],
+      "acceptance": [
+        "4.5:1 ratio for text",
+        "3:1 for large text",
+        "Tools verify"
+      ]
+    },
+    {
+      "id": "A11Y-005",
+      "name": "Focus Management",
+      "description": "Proper focus management in modals and dynamic content",
+      "priority": "P2",
+      "phase": 21,
+      "effort": "3h",
+      "passes": true,
+      "category": "accessibility",
+      "files": [
+        "apps/web/src/components/Modal.tsx"
+      ],
+      "acceptance": [
+        "Focus trapped in modals",
+        "Focus restored on close",
+        "Dynamic content announced"
+      ]
     }
   ]
 }

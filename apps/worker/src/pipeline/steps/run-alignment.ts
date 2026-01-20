@@ -104,6 +104,12 @@ export async function runAlignment(
           response_format: "verbose_json",
           timestamp_granularities: ["segment", "word"],
         });
+
+        // ANALYTICS-004: Track Whisper cost (audio duration in seconds)
+        if (ctx.costTracker && ctx.artifacts.narrationDurationMs) {
+          const durationSeconds = ctx.artifacts.narrationDurationMs / 1000;
+          ctx.costTracker.trackOpenAIWhisper('whisper-1', durationSeconds);
+        }
       }
 
       await heartbeat(ctx.jobId);

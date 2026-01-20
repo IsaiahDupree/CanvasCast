@@ -5,6 +5,10 @@ import { runVisuals } from "./steps/visuals.js";
 import { runRemotion } from "./steps/remotion.js";
 import { runPackaging } from "./steps/packaging.js";
 import { notifyJobEvent } from "./notify.js";
+import {
+  shouldMoveToDeadLetterQueue,
+  moveJobToDeadLetterQueue,
+} from "../queues/dead-letter.js";
 
 export type JobRow = {
   id: string;
@@ -12,6 +16,7 @@ export type JobRow = {
   user_id: string;
   status: string;
   progress: number;
+  retry_count?: number;
 };
 
 export type PipelineContext = {
@@ -114,16 +119,38 @@ export async function processJob(job: JobRow, supabase: SupabaseClient) {
     const message = err instanceof Error ? err.message : String(err);
     console.error(`  [${jobId}] ❌ FAILED:`, message);
 
-    await updateJob(supabase, jobId, {
-      status: "FAILED",
-      error_code: "WORKER_FAILED",
-      error_message: message,
-      finished_at: new Date().toISOString(),
-    });
+    // Increment retry count
+    const retryCount = (job.retry_count || 0) + 1;
 
-    await updateProject(supabase, projectId, { status: "failed" });
+    // Check if job should be moved to dead letter queue
+    if (shouldMoveToDeadLetterQueue(retryCount)) {
+      console.warn(
+        `  [${jobId}] Job exceeded max retries (${retryCount}). Moving to DLQ.`
+      );
 
-    await notifyJobEvent(jobId, "JOB_FAILED");
+      await moveJobToDeadLetterQueue(
+        supabase,
+        jobId,
+        `Exceeded maximum retry attempts (${retryCount}). Last error: ${message}`
+      );
+
+      await updateProject(supabase, projectId, { status: "failed" });
+      await notifyJobEvent(jobId, "JOB_FAILED");
+    } else {
+      // Job can be retried
+      console.log(`  [${jobId}] Retry count: ${retryCount}. Job can be retried.`);
+
+      await updateJob(supabase, jobId, {
+        status: "FAILED",
+        retry_count: retryCount,
+        error_code: "WORKER_FAILED",
+        error_message: message,
+        finished_at: new Date().toISOString(),
+      });
+
+      await updateProject(supabase, projectId, { status: "failed" });
+      await notifyJobEvent(jobId, "JOB_FAILED");
+    }
   } finally {
     // Cleanup temp directory
     const fs = await import("node:fs/promises");

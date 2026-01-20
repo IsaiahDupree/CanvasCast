@@ -1,28 +1,34 @@
 import Link from "next/link";
 import { ArrowRight, Play, Sparkles, Download, Mic } from "lucide-react";
 import { PromptInput } from "@/components/prompt-input";
+import { LandingTracker } from "@/components/FunnelTracker";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-900 to-black text-white">
+    <>
+      <LandingTracker />
       {/* Header */}
       <header className="container mx-auto px-6 py-6 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <img src="/images/logo-icon.png" alt="CanvasCast" className="w-10 h-10" />
-          <span className="text-xl font-bold">CanvasCast</span>
+          <Link href="/" className="flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 focus:ring-offset-gray-900 rounded-lg">
+            <img src="/images/logo-icon.png" alt="CanvasCast" className="w-10 h-10" />
+            <span className="text-xl font-bold">CanvasCast</span>
+          </Link>
         </div>
-        <nav className="flex items-center gap-6">
-          <Link href="/pricing" className="text-gray-300 hover:text-white transition">
+        <nav aria-label="Main navigation" className="flex items-center gap-6">
+          <Link href="/pricing" className="text-gray-300 hover:text-white transition focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 focus:ring-offset-gray-900 rounded-md px-2 py-1">
             Pricing
           </Link>
           <Link
             href="/login"
-            className="px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 transition font-medium"
+            className="px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 transition font-medium focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 focus:ring-offset-gray-900"
           >
             Sign In
           </Link>
         </nav>
       </header>
+
+      <main id="main-content" className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-900 to-black text-white">
 
       {/* Hero */}
       <section className="container mx-auto px-6 py-16 text-center">
@@ -140,17 +146,18 @@ export default function Home() {
           </p>
           <Link
             href="/login"
-            className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-white text-brand-600 font-semibold text-lg hover:bg-gray-100 transition"
+            className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-white text-brand-600 font-semibold text-lg hover:bg-gray-100 transition focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-brand-600"
           >
-            Get Started Free <ArrowRight className="w-5 h-5" />
+            Get Started Free <ArrowRight className="w-5 h-5" aria-hidden="true" />
           </Link>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="container mx-auto px-6 py-8 border-t border-white/10 text-center text-gray-500">
+      <footer className="container mx-auto px-6 py-8 border-t border-white/10 text-center text-gray-500" role="contentinfo">
         <p>&copy; {new Date().getFullYear()} CanvasCast. All rights reserved.</p>
       </footer>
-    </main>
+      </main>
+    </>
   );
 }

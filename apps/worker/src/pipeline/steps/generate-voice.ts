@@ -65,7 +65,7 @@ export async function generateVoice(
           durationMs = await generateWithIndexTTS(section.narrationText, localPath, ctx.jobId);
         } else if (TTS_PROVIDER === "openai" || process.env.OPENAI_API_KEY) {
           // Use OpenAI TTS
-          durationMs = await generateWithOpenAI(section.narrationText, localPath);
+          durationMs = await generateWithOpenAI(section.narrationText, localPath, ctx);
         } else {
           // Mock: generate silent audio
           durationMs = section.estimatedDurationMs;
@@ -75,7 +75,7 @@ export async function generateVoice(
         // Fallback to OpenAI if IndexTTS fails
         if (TTS_PROVIDER === "indextts") {
           await insertJobEvent(ctx.jobId, "VOICE_GEN", `IndexTTS failed for section ${i}, falling back to OpenAI`, "warn");
-          durationMs = await generateWithOpenAI(section.narrationText, localPath);
+          durationMs = await generateWithOpenAI(section.narrationText, localPath, ctx);
         } else {
           throw ttsError;
         }
@@ -135,7 +135,7 @@ export async function generateVoice(
   }
 }
 
-async function generateWithOpenAI(text: string, outputPath: string): Promise<number> {
+async function generateWithOpenAI(text: string, outputPath: string, ctx: PipelineContext): Promise<number> {
   const response = await openai.audio.speech.create({
     model: "tts-1",
     voice: OPENAI_TTS_VOICE,
@@ -145,6 +145,11 @@ async function generateWithOpenAI(text: string, outputPath: string): Promise<num
 
   const buffer = Buffer.from(await response.arrayBuffer());
   await fs.writeFile(outputPath, buffer);
+
+  // ANALYTICS-004: Track TTS cost
+  if (ctx.costTracker) {
+    ctx.costTracker.trackOpenAITTS('tts-1', text.length);
+  }
 
   // Estimate duration (OpenAI TTS is ~150 words/min)
   const wordCount = text.split(/\s+/).length;

@@ -30,10 +30,12 @@ export type JobErrorCode =
   | "ERR_VISUAL_PLAN"
   | "ERR_IMAGE_GEN"
   | "ERR_TIMELINE"
+  | "ERR_PREVIEW" // REMOTION-006: Preview generation errors
   | "ERR_RENDER"
   | "ERR_PACKAGING"
   | "ERR_NOTIFY_COMPLETE"
   | "ERR_CREDITS"
+  | "ERR_MODERATION" // MOD-002: Content moderation errors
   | "ERR_UNKNOWN";
 
 export type AssetType =
@@ -41,11 +43,38 @@ export type AssetType =
   | "audio"
   | "image"
   | "captions"
+  | "thumbnail" // REMOTION-006: Preview thumbnails
   | "video"
   | "zip"
   | "timeline"
   | "outline"
-  | "other";
+
+// RATE-004: API Key types
+export interface ApiKey {
+  id: string;
+  user_id: string;
+  key: string;
+  name: string;
+  description?: string;
+  rate_limit_requests: number;
+  rate_limit_window: string;
+  usage_count: number;
+  last_used_at: Date | null;
+  is_active: boolean;
+  expires_at: Date | null;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface ApiKeyUsageNotification {
+  id: string;
+  api_key_id: string;
+  threshold_percentage: number;
+  usage_count: number;
+  limit: number;
+  notified_at: Date;
+  window_reset_at: Date;
+}
 
 export type LedgerType =
   | "purchase"

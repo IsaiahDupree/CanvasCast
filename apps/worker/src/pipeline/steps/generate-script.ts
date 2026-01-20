@@ -32,7 +32,7 @@ export async function generateScript(
       messages: [
         {
           role: "system",
-          content: `You are a professional scriptwriter for YouTube videos. 
+          content: `You are a professional scriptwriter for YouTube videos.
 Create engaging, educational scripts with clear sections.
 Each section should be 20-60 seconds when spoken.
 Include visual cues in [brackets] for the video editor.
@@ -67,6 +67,15 @@ Include 5-8 sections. Make the first section a strong hook.`,
       response_format: { type: "json_object" },
       temperature: 0.7,
     });
+
+    // ANALYTICS-004: Track OpenAI completion cost
+    if (ctx.costTracker && response.usage) {
+      ctx.costTracker.trackOpenAICompletion(
+        'gpt-4o',
+        response.usage.prompt_tokens,
+        response.usage.completion_tokens
+      );
+    }
 
     const content = response.choices[0]?.message?.content;
     if (!content) {

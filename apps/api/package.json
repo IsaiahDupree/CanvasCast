@@ -9,7 +9,10 @@
     "start": "node dist/index.js",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "kill-port": "lsof -ti:8989 | xargs kill -9 2>/dev/null || echo 'Port 8989 is free'"
+    "kill-port": "lsof -ti:8989 | xargs kill -9 2>/dev/null || echo 'Port 8989 is free'",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
+    "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage"
   },
   "dependencies": {
     "@bull-board/api": "^6.16.2",
@@ -17,6 +20,9 @@
     "@canvascast/shared": "workspace:*",
     "@sentry/node": "^10.34.0",
     "@supabase/supabase-js": "^2.45.0",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.36.1",
+    "archiver": "^7.0.1",
     "bullmq": "^5.1.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -29,11 +35,16 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@jest/globals": "^30.2.0",
+    "@types/archiver": "^6.0.2",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
+    "@types/jest": "^30.0.0",
     "@types/multer": "^1.4.11",
     "@types/node": "^20.11.0",
     "@types/uuid": "^9.0.8",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.6",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3"
   }
