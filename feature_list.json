@@ -3,7 +3,7 @@
   "description": "AI Video Generation Platform - Transform text prompts into fully produced short-form videos with AI-generated scripts, voiceover, images, and captions",
   "version": "1.0",
   "totalFeatures": 147,
-  "completedFeatures": 145,
+  "completedFeatures": 147,
   "phases": {
     "phase1_foundation": "Project setup, monorepo structure, shared packages",
     "phase2_database": "Supabase schema, migrations, RLS policies, RPC functions",
