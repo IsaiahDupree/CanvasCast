@@ -2114,7 +2114,7 @@
     {
       "id": "ANALYTICS-002",
       "name": "Funnel Metrics",
-      "description": "Track landing → signup → first_video → paid_conversion funnel",
+      "description": "Track landing \u2192 signup \u2192 first_video \u2192 paid_conversion funnel",
       "priority": "P1",
       "phase": 15,
       "effort": "3h",
@@ -2646,6 +2646,70 @@
         "Focus restored on close",
         "Dynamic content announced"
       ]
+    },
+    {
+      "id": "TRACK-001",
+      "name": "Tracking SDK Integration",
+      "description": "Install and initialize user event tracking SDK from ACD",
+      "category": "tracking",
+      "priority": "P1",
+      "passes": false
+    },
+    {
+      "id": "TRACK-002",
+      "name": "Acquisition Event Tracking",
+      "description": "Track landing_view, cta_click, pricing_view with UTM params",
+      "category": "tracking",
+      "priority": "P1",
+      "passes": false
+    },
+    {
+      "id": "TRACK-003",
+      "name": "Activation Event Tracking",
+      "description": "Track signup_start, login_success, activation_complete",
+      "category": "tracking",
+      "priority": "P1",
+      "passes": false
+    },
+    {
+      "id": "TRACK-004",
+      "name": "Core Value Event Tracking",
+      "description": "Track product-specific value events (created, completed, downloaded)",
+      "category": "tracking",
+      "priority": "P1",
+      "passes": false
+    },
+    {
+      "id": "TRACK-005",
+      "name": "Monetization Event Tracking",
+      "description": "Track checkout_started, purchase_completed, subscription events",
+      "category": "tracking",
+      "priority": "P1",
+      "passes": false
+    },
+    {
+      "id": "TRACK-006",
+      "name": "Retention Event Tracking",
+      "description": "Track return_session, returning_user product events",
+      "category": "tracking",
+      "priority": "P2",
+      "passes": false
+    },
+    {
+      "id": "TRACK-007",
+      "name": "Error & Performance Tracking",
+      "description": "Track errors, API failures, and Core Web Vitals",
+      "category": "tracking",
+      "priority": "P2",
+      "passes": false
+    },
+    {
+      "id": "TRACK-008",
+      "name": "User Identification",
+      "description": "Identify users on login with traits (email, plan, etc.)",
+      "category": "tracking",
+      "priority": "P1",
+      "passes": false
     }
   ]
 }
