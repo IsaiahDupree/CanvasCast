@@ -71,7 +71,7 @@ CREATE POLICY "retention_config_admin_select"
   USING (
     EXISTS (
       SELECT 1 FROM public.profiles
-      WHERE id = auth.uid() AND role = 'admin'
+      WHERE id = auth.uid() AND is_admin = true
     )
   );
 
@@ -97,7 +97,7 @@ CREATE POLICY "deletion_log_admin_select"
   USING (
     EXISTS (
       SELECT 1 FROM public.profiles
-      WHERE id = auth.uid() AND role = 'admin'
+      WHERE id = auth.uid() AND is_admin = true
     )
   );
 

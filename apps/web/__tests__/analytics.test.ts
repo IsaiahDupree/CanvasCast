@@ -29,8 +29,16 @@ jest.mock('posthog-js', () => ({
 }));
 
 describe('Analytics', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     jest.clearAllMocks();
+    // Reset localStorage before each test
+    localStorage.clear();
+    // Set default cookie consent to allow analytics
+    localStorage.setItem('cookie-consent', JSON.stringify({ analytics: true }));
+
+    // Reset the PostHog instance between tests
+    const { _resetPostHogInstance } = await import('@/lib/analytics');
+    _resetPostHogInstance();
   });
 
   describe('PostHog Initialization', () => {
@@ -64,8 +72,9 @@ describe('Analytics', () => {
 
   describe('Page View Tracking', () => {
     it('should track page views with correct properties', async () => {
-      const { trackPageView } = await import('@/lib/analytics');
+      const { initPostHog, trackPageView } = await import('@/lib/analytics');
 
+      initPostHog();
       trackPageView('/test-page');
 
       expect(mockCapture).toHaveBeenCalledWith(
@@ -77,8 +86,9 @@ describe('Analytics', () => {
     });
 
     it('should include additional properties when provided', async () => {
-      const { trackPageView } = await import('@/lib/analytics');
+      const { initPostHog, trackPageView } = await import('@/lib/analytics');
 
+      initPostHog();
       trackPageView('/test-page', { referrer: 'google' });
 
       expect(mockCapture).toHaveBeenCalledWith(
@@ -93,16 +103,18 @@ describe('Analytics', () => {
 
   describe('User Identification', () => {
     it('should identify users with correct user ID', async () => {
-      const { identifyUser } = await import('@/lib/analytics');
+      const { initPostHog, identifyUser } = await import('@/lib/analytics');
 
+      initPostHog();
       identifyUser('user-123');
 
       expect(mockIdentify).toHaveBeenCalledWith('user-123', expect.any(Object));
     });
 
     it('should identify users with additional properties', async () => {
-      const { identifyUser } = await import('@/lib/analytics');
+      const { initPostHog, identifyUser } = await import('@/lib/analytics');
 
+      initPostHog();
       identifyUser('user-123', {
         email: 'test@example.com',
         plan: 'pro',
@@ -118,8 +130,9 @@ describe('Analytics', () => {
     });
 
     it('should not identify if user ID is empty', async () => {
-      const { identifyUser } = await import('@/lib/analytics');
+      const { initPostHog, identifyUser } = await import('@/lib/analytics');
 
+      initPostHog();
       identifyUser('');
 
       expect(mockIdentify).not.toHaveBeenCalled();
@@ -128,16 +141,18 @@ describe('Analytics', () => {
 
   describe('Event Tracking', () => {
     it('should track custom events', async () => {
-      const { trackEvent } = await import('@/lib/analytics');
+      const { initPostHog, trackEvent } = await import('@/lib/analytics');
 
+      initPostHog();
       trackEvent('video_created', { duration: 30 });
 
       expect(mockCapture).toHaveBeenCalledWith('video_created', { duration: 30 });
     });
 
     it('should track events without properties', async () => {
-      const { trackEvent } = await import('@/lib/analytics');
+      const { initPostHog, trackEvent } = await import('@/lib/analytics');
 
+      initPostHog();
       trackEvent('button_clicked');
 
       expect(mockCapture).toHaveBeenCalledWith('button_clicked', {});

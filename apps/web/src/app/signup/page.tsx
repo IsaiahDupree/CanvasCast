@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { trackActivationEvent, ACTIVATION_EVENTS } from "@/lib/analytics";
 import { Loader2, CheckCircle, Sparkles } from "lucide-react";
 
 export default function SignupPage() {
@@ -42,6 +43,12 @@ export default function SignupPage() {
     setLoading(true);
     setError(null);
 
+    // Track signup start event (TRACK-003)
+    trackActivationEvent(ACTIVATION_EVENTS.SIGNUP_START, {
+      method: 'email',
+      has_draft: !!draftId,
+    });
+
     // Include draft parameter in redirect URL
     const redirectUrl = draftId
       ? `${window.location.origin}/auth/callback?draft=${draftId}`
@@ -67,6 +74,12 @@ export default function SignupPage() {
   async function handleGoogleSignup() {
     setLoadingGoogle(true);
     setError(null);
+
+    // Track signup start event (TRACK-003)
+    trackActivationEvent(ACTIVATION_EVENTS.SIGNUP_START, {
+      method: 'google',
+      has_draft: !!draftId,
+    });
 
     // Include draft parameter in redirect URL
     const redirectUrl = draftId

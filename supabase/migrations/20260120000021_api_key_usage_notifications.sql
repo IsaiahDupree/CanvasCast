@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS public.api_key_usage_notifications (
   api_key_id UUID NOT NULL REFERENCES public.api_keys(id) ON DELETE CASCADE,
   threshold_percentage INTEGER NOT NULL, -- e.g., 80, 90, 100
   usage_count BIGINT NOT NULL,
-  limit INTEGER NOT NULL,
+  usage_limit INTEGER NOT NULL, -- Renamed from 'limit' to avoid reserved keyword
   notified_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   window_reset_at TIMESTAMPTZ NOT NULL,
 

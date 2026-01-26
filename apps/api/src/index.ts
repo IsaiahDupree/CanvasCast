@@ -21,8 +21,11 @@ import metricsRouter from './routes/metrics.js';
 import apiKeysRouter from './routes/api-keys.js';
 import accountDeletionRouter from './routes/account/delete.js';
 import accountExportRouter from './routes/account/export.js';
+import metaCapiRouter from './routes/meta-capi.js';
 import { moderateContent } from './middleware/moderation.js';
 import { jobCreationRateLimitMiddleware } from './middleware/job-creation-rate-limit.js';
+import { trackMonetizationEvent, MONETIZATION_EVENTS } from './lib/analytics.js';
+import { initMetaCAPI } from './lib/meta-capi.js';
 
 config();
 
@@ -59,6 +62,14 @@ const supabase = createClient(
 
 // Stripe client
 const stripe = getStripeClient();
+
+// Initialize Meta Conversions API (META-004)
+if (process.env.META_ACCESS_TOKEN && process.env.META_PIXEL_ID) {
+  initMetaCAPI(process.env.META_ACCESS_TOKEN, process.env.META_PIXEL_ID);
+  console.log('[META-CAPI] Initialized Meta Conversions API');
+} else {
+  console.warn('[META-CAPI] Meta Conversions API not configured (missing META_ACCESS_TOKEN or META_PIXEL_ID)');
+}
 
 // Middleware
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
@@ -561,6 +572,7 @@ app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), asyn
       const userId = session.metadata?.user_id;
       const credits = parseInt(session.metadata?.credits || '0', 10);
       const paymentIntent = session.payment_intent as string;
+      const productName = session.metadata?.product_name || 'Credit Pack';
 
       if (userId && credits > 0) {
         await supabase.rpc('add_credits', {
@@ -571,6 +583,18 @@ app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), asyn
           p_idempotency_key: paymentIntent,
         });
         console.log(`[API] 💰 Added ${credits} credits to user ${userId} (payment: ${paymentIntent})`);
+
+        // Track purchase_completed event (TRACK-005)
+        trackMonetizationEvent(userId, MONETIZATION_EVENTS.PURCHASE_COMPLETED, {
+          product_type: 'credits',
+          product_name: productName,
+          amount: session.amount_total || 0,
+          credits,
+          currency: session.currency?.toUpperCase() || 'USD',
+          transaction_id: paymentIntent,
+          payment_method: 'card',
+          revenue: (session.amount_total || 0) / 100, // Convert cents to dollars
+        });
       }
     }
 
@@ -620,6 +644,33 @@ app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), asyn
             })
             .eq('stripe_subscription_id', subscription.id);
           console.log(`[API] 📝 Updated subscription record for ${subscription.id}`);
+
+          // Determine if this is first payment or renewal
+          const isFirstPayment = invoice.billing_reason === 'subscription_create';
+
+          // Track subscription event (TRACK-005)
+          trackMonetizationEvent(
+            userId,
+            isFirstPayment
+              ? MONETIZATION_EVENTS.SUBSCRIPTION_COMPLETED
+              : MONETIZATION_EVENTS.SUBSCRIPTION_RENEWED,
+            {
+              plan: plan || 'unknown',
+              amount: invoice.amount_paid || 0,
+              currency: invoice.currency?.toUpperCase() || 'USD',
+              interval: 'monthly',
+              credits_per_month: credits,
+              subscription_id: subscription.id,
+              revenue: (invoice.amount_paid || 0) / 100, // Convert cents to dollars
+              ...(isFirstPayment
+                ? {}
+                : {
+                    renewal_count: subscription.metadata?.renewal_count
+                      ? parseInt(subscription.metadata.renewal_count, 10) + 1
+                      : 1,
+                  }),
+            }
+          );
         }
       }
     }
@@ -649,6 +700,8 @@ app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), asyn
     // Handle customer.subscription.deleted - subscription cancellation
     if (event.type === 'customer.subscription.deleted') {
       const subscription = event.data.object as Stripe.Subscription;
+      const userId = subscription.metadata?.user_id;
+      const plan = subscription.metadata?.plan;
 
       // Update subscription record to canceled status
       await supabase
@@ -660,6 +713,15 @@ app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), asyn
         .eq('stripe_subscription_id', subscription.id);
 
       console.log(`[API] 🚫 Subscription ${subscription.id} canceled and marked as deleted`);
+
+      // Track subscription cancellation (TRACK-005)
+      if (userId) {
+        trackMonetizationEvent(userId, MONETIZATION_EVENTS.SUBSCRIPTION_CANCELLED, {
+          plan: plan || 'unknown',
+          subscription_id: subscription.id,
+          cancellation_reason: subscription.cancellation_details?.reason || 'user_requested',
+        });
+      }
     }
 
     res.json({ received: true });
@@ -840,6 +902,9 @@ app.use('/api/v1/account', authenticateToken, accountDeletionRouter);
 
 // GDPR-003: Data export routes
 app.use('/api/v1/account', authenticateToken, accountExportRouter);
+
+// META-004: Meta Conversions API (CAPI) routes
+app.use('/api/meta-capi', metaCapiRouter);
 
 // 404 handler
 app.use((req, res) => {

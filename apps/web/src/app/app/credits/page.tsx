@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { CreditCard, Check, Loader2, ExternalLink, Zap, Crown, Rocket } from "lucide-react";
 import { createBrowserClient } from "@supabase/ssr";
 import { PRICING_TIERS, CREDIT_PACKS } from "@canvascast/shared";
-import { trackFunnelEvent, FUNNEL_EVENTS } from "@/lib/analytics";
+import { trackFunnelEvent, FUNNEL_EVENTS, trackMonetizationEvent, MONETIZATION_EVENTS } from "@/lib/analytics";
 
 const TIER_ICONS = {
   starter: Zap,
@@ -110,6 +110,33 @@ export default function CreditsPage() {
     setPurchasing(packId);
 
     try {
+      // Find the product details
+      const product = isSubscription
+        ? PRICING_TIERS.find((t) => t.id === packId)
+        : CREDIT_PACKS.find((p) => p.id === packId);
+
+      if (!product) {
+        console.error("Product not found");
+        return;
+      }
+
+      // Track checkout started event (TRACK-005)
+      trackMonetizationEvent(MONETIZATION_EVENTS.CHECKOUT_STARTED, {
+        product_type: isSubscription ? "subscription" : "credits",
+        product_name: "name" in product ? product.name : `${product.credits} Credits`,
+        amount: product.price * 100, // Convert to cents
+        currency: "USD",
+        ...(isSubscription
+          ? {
+              plan: packId,
+              interval: "monthly",
+              credits_per_month: product.credits,
+            }
+          : {
+              credits: product.credits,
+            }),
+      });
+
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

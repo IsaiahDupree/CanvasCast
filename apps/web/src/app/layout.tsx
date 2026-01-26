@@ -3,8 +3,10 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/providers/AuthProvider";
 import { PostHogProvider } from "@/providers/PostHogProvider";
+import { MetaPixelProvider } from "@/providers/MetaPixelProvider";
 import { CookieConsent } from "@/components/CookieConsent";
 import { SkipLink } from "@/components/SkipLink";
+import { PageViewTracker } from "@/components/PageViewTracker";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,8 +27,11 @@ export default function RootLayout({
         <SkipLink />
         <AuthProvider>
           <PostHogProvider>
-            {children}
-            <CookieConsent />
+            <MetaPixelProvider>
+              <PageViewTracker />
+              {children}
+              <CookieConsent />
+            </MetaPixelProvider>
           </PostHogProvider>
         </AuthProvider>
       </body>

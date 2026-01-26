@@ -79,18 +79,19 @@ CREATE POLICY "Users can view their own job costs"
   TO authenticated
   USING (auth.uid() = user_id);
 
--- Policy: Admins can view all job costs (assuming is_admin flag in profiles)
-CREATE POLICY "Admins can view all job costs"
-  ON public.job_costs
-  FOR SELECT
-  TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE profiles.id = auth.uid()
-      AND profiles.is_admin = true
-    )
-  );
+-- Policy: Admins can view all job costs (will be added after is_admin column exists)
+-- This policy will be created in migration 20260120000007 or later
+-- CREATE POLICY "Admins can view all job costs"
+--   ON public.job_costs
+--   FOR SELECT
+--   TO authenticated
+--   USING (
+--     EXISTS (
+--       SELECT 1 FROM public.profiles
+--       WHERE profiles.id = auth.uid()
+--       AND profiles.is_admin = true
+--     )
+--   );
 
 -- ============================================
 -- HELPER FUNCTIONS

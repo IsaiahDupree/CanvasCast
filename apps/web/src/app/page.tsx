@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, Play, Sparkles, Download, Mic } from "lucide-react";
 import { PromptInput } from "@/components/prompt-input";
 import { LandingTracker } from "@/components/FunnelTracker";
+import { CTAButton } from "@/components/CTAButton";
 
 export default function Home() {
   return (
@@ -19,12 +20,14 @@ export default function Home() {
           <Link href="/pricing" className="text-gray-300 hover:text-white transition focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 focus:ring-offset-gray-900 rounded-md px-2 py-1">
             Pricing
           </Link>
-          <Link
+          <CTAButton
             href="/login"
+            location="header"
+            ctaText="Sign In"
             className="px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 transition font-medium focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 focus:ring-offset-gray-900"
           >
             Sign In
-          </Link>
+          </CTAButton>
         </nav>
       </header>
 
@@ -144,12 +147,14 @@ export default function Home() {
           <p className="text-xl text-white/80 mb-8">
             Start with 10 free minutes. No credit card required.
           </p>
-          <Link
+          <CTAButton
             href="/login"
+            location="footer"
+            ctaText="Get Started Free"
             className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-white text-brand-600 font-semibold text-lg hover:bg-gray-100 transition focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-brand-600"
           >
             Get Started Free <ArrowRight className="w-5 h-5" aria-hidden="true" />
-          </Link>
+          </CTAButton>
         </div>
       </section>
 

@@ -3,6 +3,7 @@ import { Play, Home, FolderOpen, Settings, CreditCard, LogOut, Mic, Coins } from
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { SignupTracker } from "@/components/SignupTracker";
+import { ActivationTracker } from "@/components/ActivationTracker";
 
 async function getUser() {
   const supabase = await createClient();
@@ -118,6 +119,7 @@ export default async function AppLayout({
       {/* Main content */}
       <main id="main-content" className="flex-1 overflow-auto" role="main">
         <SignupTracker />
+        <ActivationTracker creditsBalance={credits} />
         {children}
       </main>
     </div>

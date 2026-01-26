@@ -66,6 +66,7 @@ After copying, fill in the required values and restart the respective services.
 | `STRIPE_PRICE_CREATOR_PLUS` | Stripe Price ID for Creator Plus subscription | `price_xxxxx` | Create subscription in Stripe Dashboard |
 | `RESEND_API_KEY` | Resend API key for email notifications | `re_...` | Get from [Resend Dashboard](https://resend.com/api-keys) |
 | `RESEND_FROM` | Email sender address | `"CanvasCast <hello@canvascast.com>"` | Must be a verified domain in Resend |
+| `RESEND_WEBHOOK_SECRET` | Resend webhook signing secret (Svix) | `whsec_...` | Get from Resend webhook configuration in dashboard |
 | `OPENAI_API_KEY` | OpenAI API key (if needed client-side) | `sk-...` | Get from [OpenAI Dashboard](https://platform.openai.com/api-keys) |
 
 ---
@@ -91,6 +92,8 @@ After copying, fill in the required values and restart the respective services.
 | `NODE_ENV` | Node environment | `development` | Set to `production` in production |
 | `STRIPE_SECRET_KEY` | Stripe secret key | - | Required for payment endpoints |
 | `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret | - | Required for webhook verification |
+| `META_PIXEL_ID` | Meta (Facebook) Pixel ID | `123456789` | Get from [Facebook Events Manager](https://business.facebook.com/events_manager) |
+| `META_ACCESS_TOKEN` | Meta Conversions API access token | `EAAxxxx` | Generate from Facebook Events Manager > Settings > Conversions API |
 | `REGISTRY_URL` | Service registry URL (optional) | - | For service discovery in distributed setups |
 
 ---

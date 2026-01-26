@@ -1,6 +1,11 @@
+'use client';
+
 import Link from "next/link";
 import { Check, Zap, Crown, Rocket, Plus } from "lucide-react";
 import { PRICING_TIERS, CREDIT_PACKS } from "@canvascast/shared";
+import { useEffect } from "react";
+import { trackAcquisitionEvent, ACQUISITION_EVENTS, extractUtmParams } from "@/lib/analytics";
+import { CTAButton } from "@/components/CTAButton";
 
 const TIER_ICONS = {
   starter: Zap,
@@ -9,6 +14,19 @@ const TIER_ICONS = {
 } as const;
 
 export default function PricingPage() {
+  // Track pricing page view on mount (TRACK-002)
+  useEffect(() => {
+    const referrer = typeof document !== 'undefined' ? document.referrer || 'direct' : 'direct';
+    const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
+    const utmParams = extractUtmParams(params);
+
+    trackAcquisitionEvent(ACQUISITION_EVENTS.PRICING_VIEW, {
+      referrer,
+      url: typeof window !== 'undefined' ? window.location.href : '',
+      ...utmParams,
+    });
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       {/* Header */}
@@ -86,8 +104,10 @@ export default function PricingPage() {
                 ))}
               </ul>
 
-              <Link
+              <CTAButton
                 href="/signup"
+                location="pricing-card"
+                ctaText={`Get Started - ${tier.name}`}
                 className={`block w-full py-3 rounded-lg font-semibold text-center transition ${
                   isPopular
                     ? "bg-brand-600 hover:bg-brand-500 text-white"
@@ -95,7 +115,7 @@ export default function PricingPage() {
                 }`}
               >
                 Get Started
-              </Link>
+              </CTAButton>
             </div>
           );
           })}
@@ -141,12 +161,14 @@ export default function PricingPage() {
           <p className="text-gray-400 mb-8">
             Start generating YouTube-ready videos in minutes.
           </p>
-          <Link
+          <CTAButton
             href="/signup"
+            location="pricing-footer"
+            ctaText="Get Started Free"
             className="inline-block px-8 py-4 bg-brand-600 hover:bg-brand-500 rounded-lg font-semibold text-lg transition"
           >
             Get Started Free
-          </Link>
+          </CTAButton>
         </div>
       </section>
 

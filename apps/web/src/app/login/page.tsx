@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { trackActivationEvent, ACTIVATION_EVENTS } from "@/lib/analytics";
 import { Loader2, CheckCircle } from "lucide-react";
 
 export default function LoginPage() {
@@ -19,6 +20,12 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    // Track signup start event - login flow uses same magic link (TRACK-003)
+    trackActivationEvent(ACTIVATION_EVENTS.SIGNUP_START, {
+      method: 'email',
+      is_login: true,
+    });
 
     const redirectUrl = `${window.location.origin}/auth/callback`;
 
@@ -42,6 +49,12 @@ export default function LoginPage() {
   async function handleGoogleLogin() {
     setLoadingGoogle(true);
     setError(null);
+
+    // Track signup start event - login flow uses same OAuth (TRACK-003)
+    trackActivationEvent(ACTIVATION_EVENTS.SIGNUP_START, {
+      method: 'google',
+      is_login: true,
+    });
 
     const redirectUrl = `${window.location.origin}/auth/callback`;
 
