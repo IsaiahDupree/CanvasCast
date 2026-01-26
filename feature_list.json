@@ -2774,6 +2774,102 @@
       "category": "meta-pixel",
       "priority": "P2",
       "passes": false
+    },
+    {
+      "id": "GDP-001",
+      "name": "Supabase Schema Setup",
+      "description": "Create person, identity_link, event, email_message, email_event, subscription, deal, person_features, segment tables",
+      "category": "growth-data-plane",
+      "priority": "P0",
+      "passes": false
+    },
+    {
+      "id": "GDP-002",
+      "name": "Person & Identity Tables",
+      "description": "Canonical person table with identity links for posthog, stripe, meta",
+      "category": "growth-data-plane",
+      "priority": "P0",
+      "passes": false
+    },
+    {
+      "id": "GDP-003",
+      "name": "Unified Events Table",
+      "description": "Normalized events from web/app/email/stripe/booking/meta sources",
+      "category": "growth-data-plane",
+      "priority": "P0",
+      "passes": false
+    },
+    {
+      "id": "GDP-004",
+      "name": "Resend Webhook Edge Function",
+      "description": "Verify Svix signature, store email events, map tags to person_id",
+      "category": "growth-data-plane",
+      "priority": "P0",
+      "passes": false
+    },
+    {
+      "id": "GDP-005",
+      "name": "Email Event Tracking",
+      "description": "Track delivered/opened/clicked/bounced events from Resend webhooks",
+      "category": "growth-data-plane",
+      "priority": "P0",
+      "passes": false
+    },
+    {
+      "id": "GDP-006",
+      "name": "Click Redirect Tracker",
+      "description": "Attribution spine: email \u2192 click \u2192 session \u2192 conversion with first-party cookie",
+      "category": "growth-data-plane",
+      "priority": "P1",
+      "passes": false
+    },
+    {
+      "id": "GDP-007",
+      "name": "Stripe Webhook Integration",
+      "description": "Handle subscription events, map stripe_customer_id to person_id",
+      "category": "growth-data-plane",
+      "priority": "P1",
+      "passes": false
+    },
+    {
+      "id": "GDP-008",
+      "name": "Subscription Snapshot",
+      "description": "Upsert subscription status, plan, MRR from Stripe events",
+      "category": "growth-data-plane",
+      "priority": "P1",
+      "passes": false
+    },
+    {
+      "id": "GDP-009",
+      "name": "PostHog Identity Stitching",
+      "description": "Call posthog.identify(personId) on login/signup",
+      "category": "growth-data-plane",
+      "priority": "P1",
+      "passes": false
+    },
+    {
+      "id": "GDP-010",
+      "name": "Meta Pixel + CAPI Dedup",
+      "description": "Fire Pixel eventID matching CAPI event_id for deduplication",
+      "category": "growth-data-plane",
+      "priority": "P1",
+      "passes": false
+    },
+    {
+      "id": "GDP-011",
+      "name": "Person Features Computation",
+      "description": "Compute active_days, core_actions, pricing_views, email_opens from events",
+      "category": "growth-data-plane",
+      "priority": "P1",
+      "passes": false
+    },
+    {
+      "id": "GDP-012",
+      "name": "Segment Engine",
+      "description": "Evaluate segment membership and trigger automations (Resend, Meta, outbound)",
+      "category": "growth-data-plane",
+      "priority": "P1",
+      "passes": false
     }
   ]
 }
