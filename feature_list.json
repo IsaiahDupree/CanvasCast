@@ -2710,6 +2710,70 @@
       "category": "tracking",
       "priority": "P1",
       "passes": false
+    },
+    {
+      "id": "META-001",
+      "name": "Meta Pixel Installation",
+      "description": "Install Facebook Pixel script in app layout",
+      "category": "meta-pixel",
+      "priority": "P1",
+      "passes": false
+    },
+    {
+      "id": "META-002",
+      "name": "PageView Tracking",
+      "description": "Track all page views with Meta Pixel",
+      "category": "meta-pixel",
+      "priority": "P1",
+      "passes": false
+    },
+    {
+      "id": "META-003",
+      "name": "Standard Events Mapping",
+      "description": "Map app events to Meta standard events (Purchase, Lead, etc.)",
+      "category": "meta-pixel",
+      "priority": "P1",
+      "passes": false
+    },
+    {
+      "id": "META-004",
+      "name": "CAPI Server-Side Events",
+      "description": "Implement Conversions API for server-side event tracking",
+      "category": "meta-pixel",
+      "priority": "P1",
+      "passes": false
+    },
+    {
+      "id": "META-005",
+      "name": "Event Deduplication",
+      "description": "Use event_id to deduplicate browser and server events",
+      "category": "meta-pixel",
+      "priority": "P1",
+      "passes": false
+    },
+    {
+      "id": "META-006",
+      "name": "User Data Hashing (PII)",
+      "description": "Hash email/phone with SHA256 for CAPI user matching",
+      "category": "meta-pixel",
+      "priority": "P1",
+      "passes": false
+    },
+    {
+      "id": "META-007",
+      "name": "Custom Audiences Setup",
+      "description": "Configure custom audiences based on user behavior",
+      "category": "meta-pixel",
+      "priority": "P2",
+      "passes": false
+    },
+    {
+      "id": "META-008",
+      "name": "Conversion Optimization",
+      "description": "Set up conversion optimization for key events",
+      "category": "meta-pixel",
+      "priority": "P2",
+      "passes": false
     }
   ]
 }
