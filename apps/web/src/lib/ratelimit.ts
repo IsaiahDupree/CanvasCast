@@ -9,6 +9,7 @@
 
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
+import { InMemoryRateLimiter } from './in-memory-ratelimiter';
 
 /**
  * Rate limit configuration
@@ -29,77 +30,31 @@ export interface RateLimitResult {
   reset: number;
 }
 
-let redisClient: Redis | null = null;
-
-/**
- * Mock Redis for development/testing when Upstash is not configured
- */
-class MockRedis {
-  private store = new Map<string, { count: number; reset: number }>();
-
-  async evalsha(...args: any[]): Promise<any[]> {
-    let key = 'default';
-    let limit = 10;
-    let windowMs = 60000;
-
-    if (args.length >= 3) {
-      if (Array.isArray(args[1]) && args[1].length > 0) {
-        key = args[1][0];
-      }
-
-      if (Array.isArray(args[2]) && args[2].length >= 3) {
-        limit = args[2][0];
-        windowMs = args[2][2];
-      }
-    }
-
-    const now = Date.now();
-    const data = this.store.get(key);
-
-    if (!data || data.reset < now) {
-      const newData = { count: 1, reset: now + windowMs };
-      this.store.set(key, newData);
-      return [1, limit - 1, newData.reset];
-    }
-
-    if (data.count < limit) {
-      data.count += 1;
-      this.store.set(key, data);
-      return [1, limit - data.count, data.reset];
-    }
-
-    return [0, 0, data.reset];
-  }
-
-  async del(key: string): Promise<number> {
-    const existed = this.store.has(key);
-    this.store.delete(key);
-    return existed ? 1 : 0;
-  }
-
-  clear(): void {
-    this.store.clear();
-  }
-}
+let redisClient: Redis | InMemoryRateLimiter | null = null;
+let inMemoryLimiter: InMemoryRateLimiter | null = null;
 
 /**
  * Get or create Redis client for Upstash
  */
 function getUpstashRedis(): Redis {
   if (redisClient) {
-    return redisClient;
+    return redisClient as Redis;
   }
 
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
 
   if (!url || !token) {
-    // Fallback to mock Redis for development and testing
+    // Fallback to in-memory rate limiter for development and testing
     if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
-      console.warn('[RATELIMIT] ⚠️  UPSTASH_REDIS_REST_URL or UPSTASH_REDIS_REST_TOKEN not set, using mock Redis');
-      const mockRedis = new MockRedis();
-      redisClient = mockRedis as any as Redis;
-      return mockRedis as any as Redis;
+      console.warn('[RATELIMIT] ⚠️  UPSTASH_REDIS_REST_URL or UPSTASH_REDIS_REST_TOKEN not set, using in-memory rate limiter');
+
+      if (!inMemoryLimiter) {
+        inMemoryLimiter = new InMemoryRateLimiter();
+      }
+
+      redisClient = inMemoryLimiter as any;
+      return inMemoryLimiter as any as Redis;
     }
 
     throw new Error(

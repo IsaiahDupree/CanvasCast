@@ -18,6 +18,7 @@ interface ApiKey {
   usage_count: number;
   last_used_at: Date | null;
   created_at: Date;
+  updated_at: Date;
   expires_at: Date | null;
   is_active: boolean;
 }
@@ -47,6 +48,7 @@ describe('API Key Rate Limiting', () => {
         usage_count: 0,
         last_used_at: null,
         created_at: new Date(),
+        updated_at: new Date(),
         expires_at: null,
         is_active: true,
       };
@@ -72,6 +74,7 @@ describe('API Key Rate Limiting', () => {
         usage_count: 0,
         last_used_at: null,
         created_at: new Date(),
+        updated_at: new Date(),
         expires_at: null,
         is_active: true,
       };
@@ -100,6 +103,7 @@ describe('API Key Rate Limiting', () => {
         usage_count: 0,
         last_used_at: null,
         created_at: new Date(),
+        updated_at: new Date(),
         expires_at: null,
         is_active: true,
       };
@@ -114,6 +118,7 @@ describe('API Key Rate Limiting', () => {
         usage_count: 0,
         last_used_at: null,
         created_at: new Date(),
+        updated_at: new Date(),
         expires_at: null,
         is_active: true,
       };
@@ -154,6 +159,7 @@ describe('API Key Rate Limiting', () => {
         usage_count: 0,
         last_used_at: null,
         created_at: new Date(),
+        updated_at: new Date(),
         expires_at: null,
         is_active: true,
       };
@@ -177,6 +183,7 @@ describe('API Key Rate Limiting', () => {
         usage_count: 0,
         last_used_at: null,
         created_at: new Date(),
+        updated_at: new Date(),
         expires_at: null,
         is_active: true,
       };

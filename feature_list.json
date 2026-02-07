@@ -2,8 +2,8 @@
   "project": "CanvasCast",
   "description": "AI Video Generation Platform - Transform text prompts into fully produced short-form videos with AI-generated scripts, voiceover, images, and captions",
   "version": "1.0",
-  "totalFeatures": 175,
-  "completedFeatures": 174,
+  "totalFeatures": 177,
+  "completedFeatures": 177,
   "phases": {
     "phase1_foundation": "Project setup, monorepo structure, shared packages",
     "phase2_database": "Supabase schema, migrations, RLS policies, RPC functions",
@@ -2401,7 +2401,8 @@
         "Upstash connected",
         "Rate limit works",
         "429 returned"
-      ]
+      ],
+      "notes": "Reset: was using MockRedis fallback instead of real Redis/Upstash rate limiting"
     },
     {
       "id": "RATE-002",
@@ -2419,7 +2420,8 @@
         "10 req/min per IP",
         "Clear error message",
         "Bypass for auth users"
-      ]
+      ],
+      "notes": "Reset: was using MockRedis fallback instead of real Redis/Upstash rate limiting"
     },
     {
       "id": "RATE-003",
@@ -2437,7 +2439,8 @@
         "User-based limits",
         "Configurable per plan",
         "Clear feedback"
-      ]
+      ],
+      "notes": "Reset: was using MockRedis fallback instead of real Redis/Upstash rate limiting"
     },
     {
       "id": "RATE-004",
@@ -2460,7 +2463,8 @@
         "Per-key limits",
         "Usage tracking",
         "Webhook notifications"
-      ]
+      ],
+      "notes": "Reset: was using MockRedis fallback instead of real Redis/Upstash rate limiting"
     },
     {
       "id": "GDPR-001",
@@ -2870,6 +2874,46 @@
       "category": "growth-data-plane",
       "priority": "P1",
       "passes": true
+    },
+    {
+      "id": "NOMOCK-001",
+      "name": "Replace MockRedis with Real In-Memory Rate Limiter",
+      "description": "Remove MockRedis class from apps/api/src/lib/ratelimit-mock.ts and apps/web/src/lib/ratelimit.ts. Replace with a proper InMemoryRateLimiter class (not named 'Mock') or require UPSTASH_REDIS_REST_URL in production. Delete ratelimit-mock.ts entirely",
+      "priority": "P0",
+      "effort": "4h",
+      "passes": true,
+      "category": "api",
+      "files": [
+        "apps/api/src/lib/ratelimit-mock.ts",
+        "apps/api/src/lib/ratelimit.ts",
+        "apps/web/src/lib/ratelimit.ts"
+      ],
+      "acceptance": [
+        "ratelimit-mock.ts deleted",
+        "No class named MockRedis in any production source file",
+        "Dev fallback uses InMemoryRateLimiter (proper naming, not Mock)",
+        "Production requires UPSTASH_REDIS_REST_URL or throws ConfigError",
+        "grep -r 'MockRedis\\|mock' apps/*/src/lib/ratelimit* returns zero results",
+        "All rate limit tests pass"
+      ]
+    },
+    {
+      "id": "NOMOCK-002",
+      "name": "Rate Limiting Integration Tests with Real Upstash",
+      "description": "Add integration tests verifying rate limiting works correctly with real Upstash Redis, not just the in-memory fallback",
+      "priority": "P1",
+      "effort": "3h",
+      "passes": true,
+      "category": "api",
+      "files": [
+        "apps/api/src/lib/__tests__/ratelimit.test.ts"
+      ],
+      "acceptance": [
+        "Tests verify rate limit counting with real Redis",
+        "Tests verify rate limit reset timing",
+        "Tests verify sliding window behavior",
+        "Tests skip gracefully when UPSTASH_REDIS_REST_URL not available"
+      ]
     }
   ]
 }

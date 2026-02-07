@@ -9,7 +9,7 @@
 
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
-import { MockRedis } from './ratelimit-mock';
+import { InMemoryRateLimiter } from './in-memory-ratelimiter';
 
 /**
  * Rate limit configuration
@@ -30,8 +30,8 @@ export interface RateLimitResult {
   reset: number;
 }
 
-let redisClient: Redis | MockRedis | null = null;
-let mockRedis: MockRedis | null = null;
+let redisClient: Redis | InMemoryRateLimiter | null = null;
+let inMemoryLimiter: InMemoryRateLimiter | null = null;
 
 /**
  * Get or create Redis client for Upstash
@@ -45,16 +45,16 @@ function getUpstashRedis(): Redis {
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
 
   if (!url || !token) {
-    // Fallback to mock Redis for development and testing
+    // Fallback to in-memory rate limiter for development and testing
     if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
-      console.warn('[RATELIMIT] ⚠️  UPSTASH_REDIS_REST_URL or UPSTASH_REDIS_REST_TOKEN not set, using mock Redis');
+      console.warn('[RATELIMIT] ⚠️  UPSTASH_REDIS_REST_URL or UPSTASH_REDIS_REST_TOKEN not set, using in-memory rate limiter');
 
-      if (!mockRedis) {
-        mockRedis = new MockRedis();
+      if (!inMemoryLimiter) {
+        inMemoryLimiter = new InMemoryRateLimiter();
       }
 
-      redisClient = mockRedis as any;
-      return mockRedis as any as Redis;
+      redisClient = inMemoryLimiter as any;
+      return inMemoryLimiter as any as Redis;
     }
 
     throw new Error(
@@ -202,7 +202,7 @@ export async function resetRateLimit(identifier: string, prefix: string = 'ratel
  * Clear all rate limits (for testing)
  */
 export function clearAllRateLimits(): void {
-  if (mockRedis) {
-    mockRedis.clear();
+  if (inMemoryLimiter) {
+    inMemoryLimiter.clear();
   }
 }
