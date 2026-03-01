@@ -1,14 +1,16 @@
 {
   "projectId": "canvascast",
   "projectRoot": "/Users/isaiahdupree/Documents/Software/YoutubeNewb-CanvasCast_2/CanvasCast-Target",
-  "lastUpdated": "2026-02-07T02:54:21.294Z",
-  "sessionType": "CODING",
-  "status": "completed",
+  "lastUpdated": "2026-02-20T17:46:36.812Z",
+  "sessionType": "error",
+  "status": "max_errors",
   "stats": {
-    "total": 177,
+    "total": 300,
     "passing": 177,
-    "pending": 0,
-    "percentComplete": "100.0"
+    "pending": 123,
+    "percentComplete": "59.0"
   },
-  "pid": 74675
+  "pid": 95518,
+  "message": "Stopped after 3 consecutive errors",
+  "lastError": "rate_limit"
 }
